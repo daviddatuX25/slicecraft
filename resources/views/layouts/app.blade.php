@@ -2,6 +2,7 @@
 <html>
 
 <head>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -24,6 +25,25 @@
     <nav class="navbar-default navbar-static-side" role="navigation">
         <div class="sidebar-collapse">
             <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <img alt="image" class="rounded-circle" src="img/profile_small.jpg"/>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="block m-t-xs font-bold">David Williams</span>
+                            <span class="text-muted text-xs block">Art Director <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                            <li><a class="dropdown-item" href="contacts.html">Contacts</a></li>
+                            <li><a class="dropdown-item" href="mailbox.html">Mailbox</a></li>
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="login.html">Logout</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        IN+
+                    </div>
+                </li>
                 <li><a href="{{ url('/dashboard') }}">Dashboard</a></li>
                 <li><a href="{{ url('/p1') }}">Movies</a></li>
                 <li><a href="{{ url('/p2') }}">Books</a></li>
@@ -155,35 +175,7 @@
 
         </nav>
         </div>
-            <div class="row wrapper border-bottom white-bg page-heading">
-                <div class="col-sm-4">
-                    <h2>This is main title</h2>
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="index.html">This is</a>
-                        </li>
-                        <li class="breadcrumb-item active">
-                            <strong>Breadcrumb</strong>
-                        </li>
-                    </ol>
-                </div>
-                <div class="col-sm-8">
-                    <div class="title-action">
-                        <a href="" class="btn btn-primary">This is action area</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wrapper wrapper-content">
-                <div class="middle-box text-center animated fadeInRightBig">
-                    <h3 class="font-bold">This is page content</h3>
-                    <div class="error-desc">
-                        You can create here any grid layout you want. And any variation layout you imagine:) Check out
-                        main dashboard and other site. It use many different layout.
-                        <br/><a href="index.html" class="btn btn-primary m-t">Dashboard</a>
-                    </div>
-                </div>
-            </div>
+            @yield('content')
             <div class="footer">
                 <div class="float-right">
                     10GB of <strong>250GB</strong> Free.
@@ -207,13 +199,10 @@
     <script src="js/inspinia.js"></script>
     <script src="js/plugins/pace/pace.min.js"></script>
 
-
-    @yield('content')
     <!-- Include Pusher and Toastr JS libraries -->
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="{{ asset('https://js.pusher.com/8.2.0/pusher.min.js') }}"></script>
+    <script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js') }}"></script>
 
 </body>
 
 </html>
-

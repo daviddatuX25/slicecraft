@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\BookController;
 
 Route::get('/dashboard', function () {
     return view('pages.dashboard');
@@ -32,9 +33,12 @@ Route::get('/p1', function (Request $request) {
     return view('pages.page1', ['movies' => $movies, 'q' => $q, 'total' => count($all)]);
 });
 
-Route::get('/p2', function () {
-    return view('pages.page2');
-});
+Route::get('/p2', [BookController::class, 'index']);
+Route::get('/book-form', [BookController::class, 'show_add_form']);
+Route::post('/add-book', [BookController::class, 'do_add']);
+Route::get('/edit-book/{id}', [BookController::class, 'show_edit_form']);
+Route::post('/update-book', [BookController::class, 'do_update']);
+Route::get('/delete-book/{id}', [BookController::class, 'do_delete']);
 
 Route::get('/p3', function () {
     return view('pages.page3');

@@ -3,7 +3,7 @@
 > This is YOUR reference for the activity. It explains what was built, how the Laravel
 > app actually works, and — most importantly — how to defend every change if your
 > instructor asks "why did you do X when it wasn't in the instructions?"
-
+> The reference starting point of the system is from this "C:\Users\sarmi\Pictures\profelec5\ws2.3\HTML5_Full_Version".
 This is a **laravel 12** app. This worksheet is a **CPRMIS v3** dashboard page built with
 an INSPINIA admin theme pasted into a Blade layout.
 

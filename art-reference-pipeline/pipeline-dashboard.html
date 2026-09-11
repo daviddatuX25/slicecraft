@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SliceCraft — Art Pipeline Visual Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #273549;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f59e0b;
+            --primary-light: #fbbf24;
+            --success: #10b981;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 2rem 1.5rem 5rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-title h1 span.badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-badge strong {
+            color: var(--primary-light);
+            font-size: 1.05rem;
+        }
+
+        /* Nav Pills */
+        .nav-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            overflow-x: auto;
+        }
+
+        .nav-tabs a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs a:hover {
+            color: #fff;
+            background: var(--surface);
+            border-color: var(--border);
+        }
+
+        .nav-tabs a.active {
+            color: #0f172a;
+            background: var(--primary-light);
+            font-weight: 600;
+        }
+
+        /* Sections */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Side-by-Side Comparison Cards (Bases) */
+        .bases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .bases-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comparison-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .pill {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
+        .pill-ube { background: #581c87; color: #e9d5ff; }
+        .pill-chocolate { background: #451a03; color: #fed7aa; }
+        .pill-redvelvet { background: #881337; color: #fecdd3; }
+        .pill-mango { background: #78350f; color: #fef08a; }
+
+        .comparison-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .pane {
+            background: var(--surface);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .pane-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.075em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .pane-label.source { color: #60a5fa; }
+        .pane-label.generated { color: var(--success); }
+
+        .img-wrapper {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            background: #090d16;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .img-wrapper img:hover {
+            transform: scale(1.03);
+        }
+
+        .placeholder-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            height: 100%;
+            width: 100%;
+            border: 2px dashed #334155;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .placeholder-box svg {
+            width: 40px;
+            height: 40px;
+            stroke: #475569;
+            margin-bottom: 0.75rem;
+        }
+
+        .placeholder-box p {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .card-footer {
+            padding: 0.9rem 1.25rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Standalone Additives Grid */
+        .additives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .additive-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .additive-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .additive-card .img-wrapper {
+            aspect-ratio: 1 / 1;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .additive-info {
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .additive-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 0.5rem;
+        }
+
+        .additive-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .additive-info .filename-tag {
+            font-size: 0.72rem;
+            color: var(--primary-light);
+            font-family: monospace;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .isolation-notes {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .note-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .note-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .note-tag.target {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .note-tag.ignore {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .note-tag.pattern {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .note-text {
+            color: #cbd5e1;
+        }
+
+
+        /* 20 Combinations Matrix Table/Grid */
+        .combinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .combo-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease;
+        }
+
+        .combo-card:hover {
+            border-color: var(--primary);
+        }
+
+        .combo-card .img-wrapper {
+            aspect-ratio: 4 / 5;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .combo-content {
+            padding: 0.85rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .combo-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .combo-id {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .combo-size {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .combo-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.35rem;
+        }
+
+        .combo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            font-size: 0.68rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        .filename-code {
+            display: block;
+            margin-top: 0.6rem;
+            font-size: 0.7rem;
+            color: #64748b;
+            font-family: monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="header-title">
+            <h1>
+                SliceCraft Art Pipeline
+                <span class="badge">Asset Manager</span>
+            </h1>
+            <p>Visual verification workbench: inspect inspiration sources side-by-side with newly generated SliceCraft assets.</p>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-badge">
+                <span>Phase 1 (Bases):</span>
+                <strong id="base-count">0 / 4</strong>
+            </div>
+            <div class="stat-badge">
+                <span>Phase 2 (Additives):</span>
+                <strong id="additive-count">0 / 10</strong>
+            </div>
+            <div class="stat-badge">
+                <span>Phase 3 (Combinations):</span>
+                <strong id="combo-count">0 / 20</strong>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <a href="#bases" class="active">1. Base References (Side-by-Side)</a>
+        <a href="#additives">2. Standalone Additives</a>
+        <a href="#combinations">3. Final 20 Combinations</a>
+    </div>
+
+    <!-- ==================== 1. BASE REFERENCES ==================== -->
+    <section id="bases" style="margin-bottom: 4rem;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2>Part 1 — Base References (Review Gate)</h2>
+                <p>Compare downloaded Cake2Go external inspiration (left) with SliceCraft's original generated base (right).</p>
+            </div>
+            <a href="base-eval-viewer.html" style="background: #7c3aed; color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #a855f7; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);">
+                🔍 Open BASE-01 Isolation Redo Viewer
+            </a>
+        </div>
+
+        <div class="bases-grid">
+            <!-- BASE 01: UBE -->
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>BASE-01: Classic Ube Cake</h3>
+                    <span class="pill pill-ube">Ube Sponge & Cream</span>
+                </div>
+                <div class="comparison-body">
+                    <div class="pane">
+                        <span class="pane-label source">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            Source Inspiration (Cake2Go)
+                        </span>
+                        <div class="img-wrapper">
+                            <img src="source-inspiration/cake2go-classic-cakes/classic-ube-reference.png" alt="Cake2Go Classic Ube Reference" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="placeholder-box" style="display: none;">
+                                <p>Source Image Missing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pane">
+                        <span class="pane-label generated">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            SliceCraft Generated Base
+                        </span>
+                        <div class="img-wrapper">
+                            <img id="img-base-ube" src="base-references/classic-ube-base.png?v=isolated" alt="SliceCraft Classic Ube Base" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateBaseCount(this);">
+                            <div class="placeholder-box">
+                                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                <p>Pending Generation</p>
+                                <span style="font-size: 0.68rem; color: #475569; margin-top: 4px;">classic-ube-base.png</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span>Target: <code>base-references/classic-ube-base.png</code></span>
+                    <span>3:4 / 4:5 • Pure White Isolated Cutout</span>
+                </div>
+            </div>
+
+            <!-- BASE 02: CHOCOLATE FUDGE -->
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>BASE-02: Chocolate Fudge Cake</h3>
+                    <span class="pill pill-chocolate">Rich Cocoa Buttercream</span>
+                </div>
+                <div class="comparison-body">
+                    <div class="pane">
+                        <span class="pane-label source">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            Source Inspiration (Cake2Go)
+                        </span>
+                        <div class="img-wrapper">
+                            <img src="source-inspiration/cake2go-classic-cakes/chocoholic-fudge-reference.png" alt="Cake2Go Chocoholic Fudge Reference" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="placeholder-box" style="display: none;">
+                                <p>Source Image Missing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pane">
+                        <span class="pane-label generated">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            SliceCraft Generated Base
+                        </span>
+                        <div class="img-wrapper">
+                            <img id="img-base-choc" src="base-references/chocolate-fudge-base.png" alt="SliceCraft Chocolate Fudge Base" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateBaseCount(this);">
+                            <div class="placeholder-box">
+                                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                <p>Pending Generation</p>
+                                <span style="font-size: 0.68rem; color: #475569; margin-top: 4px;">chocolate-fudge-base.png</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span>Target: <code>base-references/chocolate-fudge-base.png</code></span>
+                    <span>4:5 Portrait • Deep Chocolate Tone</span>
+                </div>
+            </div>
+
+            <!-- BASE 03: RED VELVET -->
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>BASE-03: Red Velvet Cake</h3>
+                    <span class="pill pill-redvelvet">Crimson Sponge & Cream Cheese</span>
+                </div>
+                <div class="comparison-body">
+                    <div class="pane">
+                        <span class="pane-label source">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Concept Specification
+                        </span>
+                        <div class="img-wrapper">
+                            <div class="placeholder-box" style="background: rgba(136, 19, 55, 0.08); border-color: rgba(136, 19, 55, 0.3);">
+                                <p style="color: #f43f5e; font-weight: 600;">Original Base Concept</p>
+                                <span style="font-size: 0.75rem; color: #fda4af; max-width: 220px; margin-top: 6px;">Deep crimson sponge layers, ivory cream cheese frosting, and velvet crumb detailing.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pane">
+                        <span class="pane-label generated">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            SliceCraft Generated Base
+                        </span>
+                        <div class="img-wrapper">
+                            <img id="img-base-velvet" src="base-references/red-velvet-base.png" alt="SliceCraft Red Velvet Base" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateBaseCount(this);">
+                            <div class="placeholder-box">
+                                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                <p>Pending Generation</p>
+                                <span style="font-size: 0.68rem; color: #475569; margin-top: 4px;">red-velvet-base.png</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span>Target: <code>base-references/red-velvet-base.png</code></span>
+                    <span>4:5 Portrait • Pure SliceCraft Original</span>
+                </div>
+            </div>
+
+            <!-- BASE 04: MANGO CELEBRATION -->
+            <div class="comparison-card">
+                <div class="card-header">
+                    <h3>BASE-04: Mango Celebration Cake</h3>
+                    <span class="pill pill-mango">Golden Mango & Light Cream</span>
+                </div>
+                <div class="comparison-body">
+                    <div class="pane">
+                        <span class="pane-label source">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            Source Inspiration (Cake2Go)
+                        </span>
+                        <div class="img-wrapper">
+                            <img src="source-inspiration/cake2go-classic-cakes/mango-meringue-reference.png" alt="Cake2Go Mango Meringue Reference" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="placeholder-box" style="display: none;">
+                                <p>Source Image Missing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pane">
+                        <span class="pane-label generated">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            SliceCraft Generated Base
+                        </span>
+                        <div class="img-wrapper">
+                            <img id="img-base-mango" src="base-references/mango-cake-base.png" alt="SliceCraft Mango Cake Base" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateBaseCount(this);">
+                            <div class="placeholder-box">
+                                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                <p>Pending Generation</p>
+                                <span style="font-size: 0.68rem; color: #475569; margin-top: 4px;">mango-cake-base.png</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span>Target: <code>base-references/mango-cake-base.png</code></span>
+                    <span>4:5 Portrait • Fresh Tropical Aesthetic</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 2. STANDALONE ADDITIVES ==================== -->
+    <section id="additives" style="margin-bottom: 4rem;">
+        <div class="section-header">
+            <div>
+                <h2>Part 2 — Standalone Additives & Toppings Library</h2>
+                <p>Isolated reference assets for specific toppings, drizzles, and decorations.</p>
+            </div>
+        </div>
+
+        <div class="additives-grid" id="additives-container">
+            <!-- 01: Fresh Fruit -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/fresh-fruit-reference-01.png" alt="Fresh Fruit" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Fresh Fruit Slices</h4>
+                        <span class="filename-tag">fresh-fruit-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Fresh strawberries, raspberries, blueberries & mint.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy the flat plate or circular dish arrangement.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Clustered crown on top center or elegant side crescent.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 02: Coconut -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/coconut-garnish-reference-01.png" alt="Coconut Garnish" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Toasted Coconut Flakes</h4>
+                        <span class="filename-tag">coconut-garnish-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Golden toasted shredded coconut flakes and texture.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy ceramic plate, scoop, wooden spoon, or cloth.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Delicate dusting along upper rim edge and/or base perimeter.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 03: Chocolate Drip -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/chocolate-drip-reference-01.png" alt="Chocolate Drip" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Chocolate Ganache Drip</h4>
+                        <span class="filename-tag">chocolate-drip-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Glossy viscous dark chocolate drip droplets running down rim.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text"><strong>CRITICAL:</strong> Do NOT copy the ivory cake cylinder, flavor, or height.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Top circumference rim, dripping 1/3 to 1/2 down the cake side.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 04: Chocolate Curls -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/chocolate-curls-reference-01.png" alt="Chocolate Curls" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Dark Chocolate Curls</h4>
+                        <span class="filename-tag">chocolate-curls-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Thin, spiral-rolled dark chocolate shavings & curls.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy the bowl, spoon, spilled cocoa, or table.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Gently piled in the center top as a light textured nest.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 05: Mixed Berries -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/mixed-berries-reference-01.png" alt="Mixed Berries" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Mixed Berries (Berries/Mint)</h4>
+                        <span class="filename-tag">mixed-berries-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Dewy strawberries, blackberries, blueberries, raspberries.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy serving surface, dish, or flat plate.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Appetizing crown on top while keeping base frosting visible.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 06: Macarons -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/macarons-reference-01.png" alt="Macarons" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Bakery Macarons</h4>
+                        <span class="filename-tag">macarons-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">3–5 pastel French macarons (vanilla, cocoa, berry).</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy the plate, linen, pitcher, or table props.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Resting securely on top, nestled into frosting or rosettes.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 07: Floral Piping -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/floral-decoration-reference-01.png" alt="Floral Decoration" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Edible Floral Piping</h4>
+                        <span class="filename-tag">floral-decoration-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Hand-piped buttercream roses, lavender blossoms & leaves.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy the ceramic serving dish or wood background.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Botanical bouquet cluster on one quadrant or side cascade.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 08: Celebration Rosette Trim -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/celebration-piping-reference-01.png" alt="Celebration Piping" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Celebration Rosette Trim</h4>
+                        <span class="filename-tag">celebration-piping-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Ornate shell borders, rosette swirls & swag garland trim.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text"><strong>CRITICAL:</strong> Do NOT copy the cake body, ivory color, or pastry tools.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Applied to rims of base cake; color adapts to base flavor.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 09: Bento Scale -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/bento-cake-proportion-reference-01.png" alt="Bento Proportion" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Bento Scale & Proportion</h4>
+                        <span class="filename-tag">bento-cake-proportion-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Petite 4-inch mini-cake scale & proportion (serves 4–6).</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy peach color, heart topper, liner, or room props.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Rescales base cake to bento size, keeping original flavor/frosting.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10: Cream Frosting Texture -->
+            <div class="additive-card">
+                <div class="img-wrapper">
+                    <img src="standalone-additives/cream-frosting-texture-reference-01.png" alt="Cream Texture" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="updateAdditiveCount();">
+                    <div class="placeholder-box"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><p>Pending</p></div>
+                </div>
+                <div class="additive-info">
+                    <div class="additive-info-header">
+                        <h4>Smooth Cream Frosting</h4>
+                        <span class="filename-tag">cream-frosting-texture-reference-01</span>
+                    </div>
+                    <div class="isolation-notes">
+                        <div class="note-row"><span class="note-tag target">Target</span><span class="note-text">Velvety smooth whipped/buttercream finish with spatula lines.</span></div>
+                        <div class="note-row"><span class="note-tag ignore">Ignore</span><span class="note-text">Do NOT copy spatulas, bowls, or harsh lighting glare.</span></div>
+                        <div class="note-row"><span class="note-tag pattern">Pattern</span><span class="note-text">Consistent surface finish quality applied across all cake models.</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 3. 20 FINAL COMBINATIONS ==================== -->
+    <section id="combinations">
+        <div class="section-header">
+            <div>
+                <h2>Part 3 — Final 20 Generated Combinations</h2>
+                <p>The final customer-facing preview assets powering the custom cake builder.</p>
+            </div>
+        </div>
+
+        <div class="combinations-grid" id="combos-container">
+            <!-- 20 Cards mapped from filename-map.csv -->
+        </div>
+    </section>
+</div>
+
+<script>
+    // Filename map data from prompts/filename-map.csv
+    const combinations = [
+        { id: "01", filename: "classic-ube-minimal.png", base: "Classic Ube", size: "0.5 kg", combo: "Minimal cream finish", additives: "cream-frosting" },
+        { id: "02", filename: "classic-ube-coconut.png", base: "Classic Ube", size: "1 kg", combo: "Ube coconut garnish", additives: "toasted-coconut" },
+        { id: "03", filename: "classic-ube-fruit.png", base: "Classic Ube", size: "1 kg", combo: "Ube fresh fruit", additives: "fresh-fruit" },
+        { id: "04", filename: "classic-ube-floral.png", base: "Classic Ube", size: "1 kg", combo: "Ube floral celebration", additives: "floral-piping" },
+        { id: "05", filename: "classic-ube-bento.png", base: "Classic Ube", size: "Bento", combo: "Ube bento presentation", additives: "bento-scale" },
+
+        { id: "06", filename: "chocolate-fudge-minimal.png", base: "Chocolate Fudge", size: "0.5 kg", combo: "Minimal chocolate finish", additives: "cream-frosting" },
+        { id: "07", filename: "chocolate-fudge-drip.png", base: "Chocolate Fudge", size: "1 kg", combo: "Chocolate drip", additives: "chocolate-drip" },
+        { id: "08", filename: "chocolate-fudge-berries.png", base: "Chocolate Fudge", size: "1 kg", combo: "Chocolate and berries", additives: "mixed-berries" },
+        { id: "09", filename: "chocolate-fudge-macarons.png", base: "Chocolate Fudge", size: "1 kg", combo: "Chocolate and macarons", additives: "macarons" },
+        { id: "10", filename: "chocolate-fudge-bento.png", base: "Chocolate Fudge", size: "Bento", combo: "Bento chocolate presentation", additives: "bento-scale" },
+
+        { id: "11", filename: "red-velvet-minimal.png", base: "Red Velvet", size: "0.5 kg", combo: "Classic cream cheese finish", additives: "cream-frosting" },
+        { id: "12", filename: "red-velvet-berries.png", base: "Red Velvet", size: "1 kg", combo: "Red velvet and berries", additives: "mixed-berries" },
+        { id: "13", filename: "red-velvet-drip.png", base: "Red Velvet", size: "1 kg", combo: "Red velvet drip", additives: "chocolate-drip" },
+        { id: "14", filename: "red-velvet-celebration.png", base: "Red Velvet", size: "1 kg", combo: "Red velvet celebration trim", additives: "celebration-piping" },
+        { id: "15", filename: "red-velvet-bento.png", base: "Red Velvet", size: "Bento", combo: "Bento red velvet presentation", additives: "bento-scale" },
+
+        { id: "16", filename: "mango-cake-minimal.png", base: "Mango Cake", size: "0.5 kg", combo: "Mango cream finish", additives: "cream-frosting" },
+        { id: "17", filename: "mango-cake-coconut.png", base: "Mango Cake", size: "1 kg", combo: "Mango coconut garnish", additives: "toasted-coconut" },
+        { id: "18", filename: "mango-cake-tropical-fruit.png", base: "Mango Cake", size: "1 kg", combo: "Mango tropical fruit", additives: "fresh-fruit" },
+        { id: "19", filename: "mango-cake-celebration.png", base: "Mango Cake", size: "1 kg", combo: "Mango celebration finish", additives: "celebration-piping" },
+        { id: "20", filename: "mango-cake-bento.png", base: "Mango Cake", size: "Bento", combo: "Bento mango presentation", additives: "bento-scale" }
+    ];
+
+    const combosContainer = document.getElementById("combos-container");
+    let generatedCombosCount = 0;
+
+    combinations.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "combo-card";
+        card.innerHTML = `
+            <div class="img-wrapper">
+                <img src="generated-combinations/${item.filename}" alt="${item.combo}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="incrementComboCount();">
+                <div class="placeholder-box">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    <p>Pending Generation</p>
+                </div>
+            </div>
+            <div class="combo-content">
+                <div>
+                    <div class="combo-meta">
+                        <span class="combo-id">#${item.id}</span>
+                        <span class="combo-size">${item.size}</span>
+                    </div>
+                    <div class="combo-title">${item.combo}</div>
+                    <div class="combo-tags">
+                        <span class="tag">${item.base}</span>
+                        <span class="tag">${item.additives}</span>
+                    </div>
+                </div>
+                <code class="filename-code">${item.filename}</code>
+            </div>
+        `;
+        combosContainer.appendChild(card);
+    });
+
+    let basesCount = 0;
+    function updateBaseCount(img) {
+        basesCount++;
+        document.getElementById("base-count").textContent = `${basesCount} / 4`;
+    }
+
+    let additivesCount = 0;
+    function updateAdditiveCount() {
+        additivesCount++;
+        document.getElementById("additive-count").textContent = `${additivesCount} / 10`;
+    }
+
+    function incrementComboCount() {
+        generatedCombosCount++;
+        document.getElementById("combo-count").textContent = `${generatedCombosCount} / 20`;
+    }
+
+    // Lightbox modal for inspecting images
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.createElement("div");
+        modal.id = "lightbox-modal";
+        modal.style.cssText = "display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); align-items:center; justify-content:center; cursor:pointer;";
+        modal.innerHTML = '<img id="lightbox-img" style="max-width:90vw; max-height:90vh; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.8); border:1px solid #475569;">';
+        document.body.appendChild(modal);
+
+        document.querySelectorAll(".img-wrapper img").forEach(img => {
+            img.style.cursor = "zoom-in";
+            img.addEventListener("click", () => {
+                if (img.style.display !== "none" && img.src) {
+                    document.getElementById("lightbox-img").src = img.src;
+                    modal.style.display = "flex";
+                }
+            });
+        });
+
+        modal.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SliceCraft — BASE-01 Redo Evaluation Viewer</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --surface: #151d2f;
+            --surface-card: #1c263c;
+            --border: #2c3a58;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #a855f7;
+            --primary-light: #c084fc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --preview-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 2rem 1.5rem 5rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .badge-purple {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--surface);
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .controls-bar span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .bg-btn {
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface-card);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .bg-btn:hover {
+            border-color: var(--primary-light);
+        }
+
+        .bg-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+            border-color: var(--primary-light);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .eval-card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .eval-card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .eval-card.featured {
+            border: 2px solid var(--primary);
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .card-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .tag-source { background: #1e3a8a; color: #93c5fd; }
+        .tag-old { background: #7f1d1d; color: #fca5a5; }
+        .tag-new { background: #064e3b; color: #6ee7b7; }
+
+        .img-viewport {
+            width: 100%;
+            height: 380px;
+            background-color: var(--preview-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            padding: 1rem;
+            transition: background-color 0.25s ease;
+        }
+
+        .img-viewport.bg-white { background-color: #ffffff; }
+        .img-viewport.bg-cream { background-color: #faf6ef; }
+        .img-viewport.bg-dark { background-color: #0f172a; }
+        .img-viewport.bg-checker {
+            background-color: #f0f0f0;
+            background-image: linear-gradient(45deg, #ddd 25%, transparent 25%),
+                              linear-gradient(-45deg, #ddd 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #ddd 75%),
+                              linear-gradient(-45deg, transparent 75%, #ddd 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .img-viewport img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: zoom-in;
+        }
+
+        .img-viewport img:hover {
+            transform: scale(1.08);
+        }
+
+        .card-details {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.88rem;
+        }
+
+        .spec-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .spec-list li {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+            padding-bottom: 0.3rem;
+        }
+
+        .spec-list li strong {
+            color: var(--text-main);
+        }
+
+        .critique-box {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            margin-top: auto;
+        }
+
+        .critique-bad {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+        }
+
+        .critique-good {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+        }
+
+        .summary-banner {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .summary-banner h3 {
+            font-size: 1.2rem;
+            color: var(--primary-light);
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-banner p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-banner code {
+            background: #090d16;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <h1>BASE-01: Classic Ube Cake <span class="badge badge-purple">Isolation Redo</span></h1>
+                <p>Interactive asset evaluation: comparing Cake2Go inspiration, previous generation, and new stand-free white background redos.</p>
+            </div>
+            <div class="controls-bar">
+                <span>Viewport BG:</span>
+                <button class="bg-btn active" onclick="setBg('bg-white', this)">White (#fff)</button>
+                <button class="bg-btn" onclick="setBg('bg-cream', this)">Bakery Cream</button>
+                <button class="bg-btn" onclick="setBg('bg-dark', this)">Dark Slate</button>
+                <button class="bg-btn" onclick="setBg('bg-checker', this)">Checkerboard</button>
+            </div>
+        </header>
+
+        <div class="nav-links">
+            <a href="pipeline-dashboard.html" class="nav-link">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Pipeline Dashboard
+            </a>
+        </div>
+
+        <div class="cards-grid">
+            <!-- CARD 1: CAKE2GO INSPIRATION -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">1. Source Inspiration</span>
+                    <span class="card-tag tag-source">Cake2Go Reference</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="source-inspiration/cake2go-classic-cakes/classic-ube-reference.png" alt="Cake2Go Classic Ube Reference">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Background:</span> <strong>Pure White / Cutout</strong></li>
+                        <li><span>Stand / Pedestal:</span> <strong>None (rests flat)</strong></li>
+                        <li><span>Contact Shadow:</span> <strong>Natural drop shadow</strong></li>
+                        <li><span>Framing:</span> <strong>Wide Product Shot</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Benchmark:</strong> The original Cake2Go asset was already a cleanly isolated product cut-out on pure white with no pedestal or staging props.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: PREVIOUS GENERATION -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">2. Previous Generated Base</span>
+                    <span class="card-tag tag-old">Has Pedestal + Cloth</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="base-references/classic-ube-base.png" alt="Previous Classic Ube Base">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Background:</span> <strong>Warm Cream Cloth / Wall</strong></li>
+                        <li><span>Stand / Pedestal:</span> <strong>Ceramic Pedestal Stand</strong></li>
+                        <li><span>Contact Shadow:</span> <strong>Under pedestal base</strong></li>
+                        <li><span>Framing:</span> <strong>3:4 Portrait Lifestyle</strong></li>
+                    </ul>
+                    <div class="critique-box critique-bad">
+                        <strong>Issue Identified:</strong> The cake sits on a tall ceramic pedestal inside a staged room with fabric folds and beige background. Not separated or usable as a clean catalog cutout.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: REDO OPTION A (3:4 PORTRAIT) -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">3. Redo Option A</span>
+                    <span class="card-tag tag-new">3:4 Portrait • Isolated</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="base-references/classic-ube-base-redo-portrait.png" alt="Redo Option A 3:4 Portrait">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Background:</span> <strong>Pure Solid White (#FFFFFF)</strong></li>
+                        <li><span>Stand / Pedestal:</span> <strong>Zero (rests flat on floor)</strong></li>
+                        <li><span>Contact Shadow:</span> <strong>Soft natural under-cake shadow</strong></li>
+                        <li><span>Aspect Ratio:</span> <strong>3:4 (896 × 1200)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Redo Result:</strong> Completely isolated on pure white. Fine ube crumb sides, smooth lavender cream top, zero props or stands. Perfect match for vertical product cards!
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 4: REDO OPTION B (1:1 SQUARE) -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">4. Redo Option B</span>
+                    <span class="card-tag tag-new">1:1 Square • Isolated</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="base-references/classic-ube-base-redo-square.png" alt="Redo Option B 1:1 Square">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Background:</span> <strong>Pure Solid White (#FFFFFF)</strong></li>
+                        <li><span>Stand / Pedestal:</span> <strong>Zero (rests flat on floor)</strong></li>
+                        <li><span>Contact Shadow:</span> <strong>Soft natural under-cake shadow</strong></li>
+                        <li><span>Aspect Ratio:</span> <strong>1:1 Square (1024 × 1024)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Redo Result:</strong> Completely isolated on pure white with balanced square padding. Ideal for standard e-commerce grid cards and the interactive cake builder!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-banner">
+            <h3>Boss, what this gives you:</h3>
+            <p>1. Test the cards against different backgrounds using the <strong>Viewport BG</strong> buttons at the top right to verify the clean edge separation and natural contact shadow.</p>
+            <p>2. The main pipeline dashboard <code>pipeline-dashboard.html</code> has also been updated with the cache buster to show the new standalone Ube base.</p>
+        </div>
+
+        <!-- ==================== PART 2: STANDALONE DRIZZLE EXPERIMENT ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Standalone Additives: Drizzle on "Invisible Cake" <span class="badge badge-purple">Boss Concept Trial</span></h1>
+                <p>Testing your concept: isolating toppings along the 3D surface geometry of an invisible cake so they never contaminate the underlying flavor.</p>
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <!-- DRIZZLE OLD -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Old Drip Reference</span>
+                    <span class="card-tag tag-old">Has Ivory Cake Body</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="standalone-additives/chocolate-drip-reference-01.png" alt="Old Chocolate Drip Reference">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Cake Surface:</span> <strong>Visible Ivory Buttercream</strong></li>
+                        <li><span>Contamination:</span> <strong>High (forces cream cake context)</strong></li>
+                        <li><span>Usability:</span> <strong>Hard to transfer onto dark/ube cakes</strong></li>
+                    </ul>
+                    <div class="critique-box critique-bad">
+                        <strong>Previous Problem:</strong> The photo included a thick ivory cream cake cylinder. When used as a reference, models copied the ivory color instead of just the drizzle!
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIZZLE SAMPLE 1: RIM ONLY -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Sample A: Rim Drip Crown</span>
+                    <span class="card-tag tag-new">Invisible Cake Silhouette</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="standalone-additives/chocolate-drip-invisible-rim.png" alt="Chocolate Drip Rim on Invisible Cake">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Cake Body:</span> <strong>100% Invisible / Transparent</strong></li>
+                        <li><span>Geometry:</span> <strong>Cylindrical top rim & 3D droplets</strong></li>
+                        <li><span>Center:</span> <strong>Open center (preserves cake top)</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Concept Success:</strong> Drips cling to the 3D contours of an invisible cake cylinder. The cake interior is empty, allowing any cake flavor underneath to show!
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIZZLE SAMPLE 2: TOP POOL + DRIP -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Sample B: Glaze Pool + Drips</span>
+                    <span class="card-tag tag-new">Full Top Glaze Disc</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="standalone-additives/chocolate-drip-invisible-pool.png" alt="Chocolate Glaze Pool on Invisible Cake">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Cake Body:</span> <strong>100% Invisible side & sponge</strong></li>
+                        <li><span>Top Surface:</span> <strong>Viscous chocolate pool with swirl</strong></li>
+                        <li><span>Perimeter:</span> <strong>Droplets dripping down 3D rim</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Concept Success:</strong> Complete chocolate ganache top crown dripping downward. Perfect for cakes that have a full chocolate pour over the top!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- ADDITIVE SAMPLE 3: MIXED BERRIES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Sample C: Mixed Berries Crown</span>
+                    <span class="card-tag tag-new">Invisible Cake Silhouette</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="standalone-additives/mixed-berries-isolated.png" alt="Mixed Berries Crown on Invisible Cake">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Cake Body:</span> <strong>100% Invisible / Transparent</strong></li>
+                        <li><span>Geometry:</span> <strong>3D elliptical crescent rim curve</strong></li>
+                        <li><span>Ingredients:</span> <strong>Strawberries, blackberries, blueberries, mint</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Concept Success:</strong> Plump, dewy berries form a natural crescent matching the cake's top surface curvature without any background or cake body.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADDITIVE SAMPLE 4: MACARONS -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Sample D: Macarons Cluster</span>
+                    <span class="card-tag tag-new">Invisible Cake Silhouette</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="standalone-additives/macarons-isolated.png" alt="Macarons Cluster on Invisible Cake">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Cake Body:</span> <strong>100% Invisible / Transparent</strong></li>
+                        <li><span>Geometry:</span> <strong>Angled cluster with realistic contact shadow</strong></li>
+                        <li><span>Colors:</span> <strong>Pastel raspberry, vanilla, cocoa, ube lavender</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Concept Success:</strong> Crisp macaron feet and creamy filling, isolated and angled in 3D space to nestle directly onto the cake top.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PART 3: LIVE MULTI-LAYER COMPOSITING STUDIO ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Part 3 — Live Multi-Layer Compositing Studio <span class="badge badge-purple">Proof of Concept</span></h1>
+                <p>Boss, tick multiple toppings below to test the dynamic 384-combination layered engine live in your browser!</p>
+            </div>
+        </header>
+
+        <div class="summary-banner" style="margin-top: 1rem; border: 2px solid var(--primary); padding: 2rem;">
+            <div style="display: grid; grid-template-columns: minmax(280px, 340px) 1fr; gap: 2.5rem; align-items: start;">
+                <!-- CONTROLS PANE -->
+                <div style="background: var(--surface-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div>
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">🎂 Select Base Cake</h4>
+                        <select id="sel-base" onchange="updateStudio()" style="width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid var(--border); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.9rem;">
+                            <option value="ube">Classic Ube Base</option>
+                            <option value="fudge">Chocolate Fudge (Simulated)</option>
+                            <option value="redvelvet">Red Velvet (Simulated)</option>
+                            <option value="mango">Mango Cake (Simulated)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem;">🍫 Drizzle / Glaze Layer</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.88rem;">
+                                <input type="radio" name="drip-opt" value="none" checked onchange="updateStudio()"> None
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.88rem;">
+                                <input type="radio" name="drip-opt" value="rim" onchange="updateStudio()"> Sample A: Rim Drip Crown
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.88rem;">
+                                <input type="radio" name="drip-opt" value="pool" onchange="updateStudio()"> Sample B: Full Glaze Pool + Drips
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem;">🍓 Multi-Select Toppings (Checkboxes)</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <label style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.88rem;">
+                                <span style="display: flex; align-items: center; gap: 0.6rem;">
+                                    <input type="checkbox" id="chk-berries" onchange="updateStudio()">
+                                    <span>Fresh Mixed Berries Crown</span>
+                                </span>
+                                <span style="color: var(--primary-light); font-weight: 600; font-size: 0.78rem;">Sample C</span>
+                            </label>
+
+                            <label style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.88rem;">
+                                <span style="display: flex; align-items: center; gap: 0.6rem;">
+                                    <input type="checkbox" id="chk-macarons" onchange="updateStudio()">
+                                    <span>French Macarons Cluster</span>
+                                </span>
+                                <span style="color: var(--primary-light); font-weight: 600; font-size: 0.78rem;">Sample D</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                        <span style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">QUICK COMBINATION PRESETS:</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                            <button class="bg-btn" onclick="applyPreset('plain')">Plain Base</button>
+                            <button class="bg-btn" onclick="applyPreset('drip-only')">Drip Only</button>
+                            <button class="bg-btn" onclick="applyPreset('berries-only')">Berries Only</button>
+                            <button class="bg-btn" onclick="applyPreset('deluxe')">Deluxe (All 3)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE STACK VIEWPORT -->
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div id="studio-viewport" style="position: relative; width: 480px; height: 480px; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 15px 40px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; transition: background 0.3s ease;">
+                        <!-- LAYER 0: BASE CAKE -->
+                        <img id="layer-base" src="base-references/classic-ube-base-redo-square.png" alt="Base Cake" style="position: absolute; width: 88%; height: 88%; object-fit: contain; z-index: 10; transition: filter 0.3s ease;">
+
+                        <!-- LAYER 1: CHOCOLATE DRIP / GLAZE -->
+                        <img id="layer-drip" src="" alt="Drip Overlay" style="position: absolute; width: 88%; height: 88%; object-fit: contain; z-index: 20; mix-blend-mode: multiply; display: none; pointer-events: none;">
+
+                        <!-- LAYER 2: FRESH BERRIES CROWN -->
+                        <img id="layer-berries" src="standalone-additives/mixed-berries-isolated.png" alt="Berries Overlay" style="position: absolute; width: 56%; height: 56%; top: 12%; left: 22%; object-fit: contain; z-index: 30; mix-blend-mode: multiply; display: none; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));">
+
+                        <!-- LAYER 3: MACARONS CLUSTER -->
+                        <img id="layer-macarons" src="standalone-additives/macarons-isolated.png" alt="Macarons Overlay" style="position: absolute; width: 32%; height: 32%; top: 22%; left: 34%; object-fit: contain; z-index: 40; mix-blend-mode: multiply; display: none; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
+                    </div>
+
+                    <div style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Active Stack:</span>
+                        <span id="active-layers-label" style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light);">Base Only</span>
+                    </div>
+
+        <!-- ==================== PART 4: COMPLETED WHOLE COMBINATIONS ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Part 4 — First Set: Classic Ube Whole Combinations <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3);">8 Completed On Pure White</span></h1>
+                <p>Boss, here is the first real set generated as single, photorealistic whole assets on pure white (#FFFFFF) with zero stands or props!</p>
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <!-- UBE 01: MINIMAL -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Combo 01: Minimal Signature</span>
+                    <span class="card-tag tag-new">Base Clean</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-minimal.png" alt="Classic Ube Minimal">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-minimal.png</strong></li>
+                        <li><span>Sides:</span> <strong>Velvety purple ube crumbs</strong></li>
+                        <li><span>Top:</span> <strong>Smooth pale lavender cream</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Clean Baseline:</strong> Clean modern bakery hero shot with soft natural contact drop shadow.
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBE 02: ROSETTES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Combo 02: Cake2Go Rosettes</span>
+                    <span class="card-tag tag-new" style="background: #1e3a8a; color: #93c5fd;">Cake2Go Heritage</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-rosettes.png" alt="Classic Ube Rosettes">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-rosettes.png</strong></li>
+                        <li><span>Heritage Motif:</span> <strong>Whipped cream pointed rosettes</strong></li>
+                        <li><span>Coverage:</span> <strong>Full top disc dense piping</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Flawless Heritage Match:</strong> Exactly replicates the iconic Cake2Go signature piping while sitting flat on white with zero pedestal.
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBE 03: COCONUT -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Combo 03: Toasted Coconut</span>
+                    <span class="card-tag tag-new">Toasted Garnish</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-coconut.png" alt="Classic Ube Coconut">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-coconut.png</strong></li>
+                        <li><span>Topping:</span> <strong>Golden toasted shredded coconut</strong></li>
+                        <li><span>Placement:</span> <strong>Outer rim garnish + center dust</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Integrated Contact:</strong> Coconut flakes physically indent into the lavender frosting with realistic microscopic shadows.
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBE 04: BERRIES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Combo 04: Fresh Berry Crescent</span>
+                    <span class="card-tag tag-new">Fresh Fruit</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-fruit.png" alt="Classic Ube Fruit">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-fruit.png</strong></li>
+                        <li><span>Topping:</span> <strong>Strawberries, blackberries, blueberries</strong></li>
+                        <li><span>Placement:</span> <strong>Lush natural crescent cluster</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Appetizing Contrast:</strong> Vibrant ruby red and dewy blue berries pop gorgeously against the purple crumb body.
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBE 05: BENTO -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Combo 05: Bento Petite Edition</span>
+                    <span class="card-tag tag-new">4-Inch Scale</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-bento.png" alt="Classic Ube Bento">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-bento.png</strong></li>
+                        <li><span>Scale:</span> <strong>Petite 4-inch mini cake diameter</strong></li>
+                        <li><span>Detail:</span> <strong>Delicate top border swirl rim</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Charming Proportions:</strong> Compact lunchbox cake ratio without ugly paper boxes or liners.
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBE 06: CELEBRATION -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Combo 06: Victorian Ube Celebration</span>
+                    <span class="card-tag tag-new">Celebration Trim</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/classic-ube-celebration.png" alt="Classic Ube Celebration">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>classic-ube-celebration.png</strong></li>
+                        <li><span>Piping:</span> <strong>Victorian lambeth scallops & shell border</strong></li>
+                        <li><span>Garnish:</span> <strong>Silver sugar dragées & white cream rosettes</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Vintage Grandeur:</strong> Rich purple ube canvas framed by intricate white and lavender scalloped piping.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PART 5: CHOCOLATE FUDGE COMBINATIONS ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Part 5 — Chocolate Fudge Series <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">8 Completed On Pure White</span></h1>
+                <p>Authentic dark cocoa patisserie craftsmanship on pure white (#FFFFFF), zero pedestals or stands.</p>
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <!-- FUDGE 01: MINIMAL -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Fudge 01: Minimal Dark Cocoa</span>
+                    <span class="card-tag tag-new">Base Clean</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-minimal.png" alt="Chocolate Fudge Minimal">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-minimal.png</strong></li>
+                        <li><span>Finish:</span> <strong>Satin dark cocoa buttercream</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Clean Baseline:</strong> Deep cocoa satin finish with subtle spatula texture and ground contact shadow.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 02: WEB GLAZE -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 02: Cake2Go Web Glaze</span>
+                    <span class="card-tag tag-new" style="background: #1e3a8a; color: #93c5fd;">Cake2Go Heritage</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-web-glaze.png" alt="Chocolate Fudge Web Glaze">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-web-glaze.png</strong></li>
+                        <li><span>Heritage Motif:</span> <strong>Feathered spiderweb glaze</strong></li>
+                        <li><span>Glaze:</span> <strong>High-gloss dark ganache</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Iconic Replicate:</strong> Exact Cake2Go Chocoholic Fudge feathered swirl on pure white.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 03: DRIP -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 03: Ganache Drip</span>
+                    <span class="card-tag tag-new">Ganache Drip</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-drip.png" alt="Chocolate Fudge Drip">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-drip.png</strong></li>
+                        <li><span>Topping:</span> <strong>Glossy dark chocolate ganache drip</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Drip Dynamics:</strong> Organic ganache drips cascading cleanly down 1/3 of the cake sides.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 04: BERRIES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 04: Mixed Berries Crown</span>
+                    <span class="card-tag tag-new">Fresh Fruit</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-berries.png" alt="Chocolate Fudge Berries">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-berries.png</strong></li>
+                        <li><span>Topping:</span> <strong>Strawberries, blackberries, raspberries, mint</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Lush Contrast:</strong> Vivid red berries resting in dark chocolate glaze with physical contact shadows.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 05: MACARONS -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 05: French Macarons</span>
+                    <span class="card-tag tag-new">Patisserie</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-macarons.png" alt="Chocolate Fudge Macarons">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-macarons.png</strong></li>
+                        <li><span>Topping:</span> <strong>Raspberry, vanilla, cocoa macarons</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Artisan Detail:</strong> Macarons leaning naturally against piped chocolate buttercream rosettes.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 06: BENTO -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Fudge 06: Bento Petite Fudge</span>
+                    <span class="card-tag tag-new">4-Inch Scale</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-bento.png" alt="Chocolate Fudge Bento">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-bento.png</strong></li>
+                        <li><span>Scale:</span> <strong>Petite 4-inch mini cake diameter</strong></li>
+                        <li><span>Detail:</span> <strong>Piped shell border with center chocolate curl</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Mini Luxury:</strong> Proportional 4-inch bento scale with dark cocoa glaze.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 07: DRIP & BERRIES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 07: Deluxe Drip & Berry Crown</span>
+                    <span class="card-tag tag-new">Drip & Berries</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-deluxe-drip-berries.png" alt="Chocolate Fudge Drip & Berries">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-deluxe-drip-berries.png</strong></li>
+                        <li><span>Topping:</span> <strong>Strawberries, blackberries, raspberries, mint</strong></li>
+                        <li><span>Drip:</span> <strong>Artisan dark ganache rim drip</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Balanced Decadence:</strong> Restrained berry crescent leaving the glossy chocolate pool visible.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUDGE 08: DRIP & MACARONS -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Fudge 08: Deluxe Drip & Macarons</span>
+                    <span class="card-tag tag-new">Drip & Macarons</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/chocolate-fudge-deluxe-drip-macarons.png" alt="Chocolate Fudge Drip & Macarons">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>chocolate-fudge-deluxe-drip-macarons.png</strong></li>
+                        <li><span>Topping:</span> <strong>French macarons & piped cocoa rosettes</strong></li>
+                        <li><span>Drip:</span> <strong>Glossy cascading ganache drip</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Patisserie Luxury:</strong> Spiral ganache swirl framed by authentic bakery macarons.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PART 6: RED VELVET COMBINATIONS ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Part 6 — Red Velvet Series <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">All 5 Core Completed On Pure White</span></h1>
+                <p>Silky ivory cream cheese frosting contrasted with crimson ruby crumbs and fresh fruit on pure white (#FFFFFF).</p>
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <!-- RV 01: MINIMAL -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Red Velvet 01: Minimal Cream Cheese</span>
+                    <span class="card-tag tag-new">Base Clean</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/red-velvet-minimal.png" alt="Red Velvet Minimal">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>red-velvet-minimal.png</strong></li>
+                        <li><span>Frosting:</span> <strong>Ivory cream cheese with spatula texture</strong></li>
+                        <li><span>Accent:</span> <strong>Ruby red velvet crumb base rim</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Refined Baseline:</strong> Also deployed as the official new white-background <code>red-velvet-base.png</code>!
+                    </div>
+                </div>
+            </div>
+
+            <!-- RV 02: BERRIES -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Red Velvet 02: Ruby Berry Wreath</span>
+                    <span class="card-tag tag-new">Fresh Fruit</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/red-velvet-berries.png" alt="Red Velvet Berries">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>red-velvet-berries.png</strong></li>
+                        <li><span>Topping:</span> <strong>Strawberries, raspberries, blueberries, mint</strong></li>
+                        <li><span>Accent:</span> <strong>Ruby crumb crescent top dusting</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Stunning Contrast:</strong> Deep crimson fruit against velvety ivory cream cheese frosting.
+                    </div>
+                </div>
+            </div>
+
+            <!-- RV 03: DRIP -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Red Velvet 03: Dark Chocolate Drip</span>
+                    <span class="card-tag tag-new">Ganache Drip</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/red-velvet-drip.png" alt="Red Velvet Drip">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>red-velvet-drip.png</strong></li>
+                        <li><span>Drip:</span> <strong>Glossy dark chocolate ganache rim drip</strong></li>
+                        <li><span>Accent:</span> <strong>Ruby crumb dusting on top surface</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Bold Contrast:</strong> Dark chocolate drips running down pristine ivory cream cheese with crimson crumb accent.
+                    </div>
+                </div>
+            </div>
+
+            <!-- RV 04: CELEBRATION -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Red Velvet 04: Celebration Rosette Trim</span>
+                    <span class="card-tag tag-new">Celebration Trim</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/red-velvet-celebration.png" alt="Red Velvet Celebration">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>red-velvet-celebration.png</strong></li>
+                        <li><span>Piping:</span> <strong>Elaborate cream cheese shell border & top rosettes</strong></li>
+                        <li><span>Garnish:</span> <strong>Fine velvet crumb ring & edible sugar pearls</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Festive Elegance:</strong> Classic bakery celebration design with clean white cutout presentation.
+                    </div>
+                </div>
+            </div>
+
+            <!-- RV 05: BENTO -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Red Velvet 05: Bento Petite Classic</span>
+                    <span class="card-tag tag-new">Bento (4-inch)</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/red-velvet-bento.png" alt="Red Velvet Bento">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>red-velvet-bento.png</strong></li>
+                        <li><span>Scale:</span> <strong>Petite 4-inch mini cake</strong></li>
+                        <li><span>Piping:</span> <strong>Delicate shell rim border with centered crumb dusting</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Miniature Perfection:</strong> Scaled specifically for personal gifting and bento cake orders.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PART 7: MANGO CELEBRATION COMBINATIONS ==================== -->
+        <header style="margin-top: 4rem;">
+            <div class="header-title">
+                <h1>Part 7 — Mango Celebration Series <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">All 5 Core Completed On Pure White</span></h1>
+                <p>Tropical ripe Philippine mango with silky ivory Chantilly cream and celebration shell piping on pure white (#FFFFFF).</p>
+            </div>
+        </header>
+
+        <div class="cards-grid">
+            <!-- MANGO 01: MINIMAL -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Mango 01: Minimal Chantilly Swirl</span>
+                    <span class="card-tag tag-new">Base Clean</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/mango-cake-minimal.png" alt="Mango Cake Minimal">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>mango-cake-minimal.png</strong></li>
+                        <li><span>Frosting:</span> <strong>Pristine ivory Chantilly cream</strong></li>
+                        <li><span>Accent:</span> <strong>Glossy golden mango spiral puree swirl</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Clean Baseline:</strong> Also saved as the clean isolated <code>mango-cake-base.png</code> reference!
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANGO 02: CELEBRATION ROSE -->
+            <div class="eval-card featured">
+                <div class="card-header">
+                    <span class="card-title">Mango 02: Celebration Mango Rose</span>
+                    <span class="card-tag tag-new">Celebration Trim</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/mango-cake-celebration.png" alt="Mango Cake Celebration">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>mango-cake-celebration.png</strong></li>
+                        <li><span>Centerpiece:</span> <strong>Handcrafted golden mango flower / rose petals</strong></li>
+                        <li><span>Piping:</span> <strong>Dual top and base scalloped shell borders</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Bakery Masterpiece:</strong> Restrained and elegant mango presentation with zero clutter, sitting flat on pure white.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANGO 03: TOASTED COCONUT -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Mango 03: Toasted Coconut Rim</span>
+                    <span class="card-tag tag-new">Coconut Rim</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/mango-cake-coconut.png" alt="Mango Cake Coconut">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>mango-cake-coconut.png</strong></li>
+                        <li><span>Garnish:</span> <strong>Toasted golden coconut flakes on perimeter</strong></li>
+                        <li><span>Accent:</span> <strong>Golden puree swirl & fresh mango slices</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Tropical Texture:</strong> Crisp toasted coconut rim framing vibrant yellow mango slices.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANGO 04: TROPICAL FRUIT -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Mango 04: Restrained Tropical Fruit</span>
+                    <span class="card-tag tag-new">Fresh Fruit</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/mango-cake-tropical-fruit.png" alt="Mango Cake Tropical Fruit">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>mango-cake-tropical-fruit.png</strong></li>
+                        <li><span>Garnish:</span> <strong>Mango slices, strawberry halves, kiwi, mint</strong></li>
+                        <li><span>Styling:</span> <strong>Delicate crescent crescent, not overcrowded</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Balanced Elegance:</strong> Adheres strictly to Boss's guidance—not overcrowded, leaving clean ivory cream visible.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANGO 05: BENTO -->
+            <div class="eval-card">
+                <div class="card-header">
+                    <span class="card-title">Mango 05: Bento Petite Mango</span>
+                    <span class="card-tag tag-new">Bento (4-inch)</span>
+                </div>
+                <div class="img-viewport bg-white">
+                    <img src="generated-combinations/mango-cake-bento.png" alt="Mango Cake Bento">
+                </div>
+                <div class="card-details">
+                    <ul class="spec-list">
+                        <li><span>Filename:</span> <strong>mango-cake-bento.png</strong></li>
+                        <li><span>Scale:</span> <strong>Petite 4-inch mini cake</strong></li>
+                        <li><span>Centerpiece:</span> <strong>Mini golden mango rose & shell piping</strong></li>
+                        <li><span>Background:</span> <strong>Pure White (#FFFFFF)</strong></li>
+                    </ul>
+                    <div class="critique-box critique-good">
+                        <strong>Personal Treat:</strong> Perfectly proportioned bento box scale with artisan rose center.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        function setBg(className, btn) {
+            document.querySelectorAll('.img-viewport').forEach(vp => {
+                vp.className = 'img-viewport ' + className;
+            });
+            document.querySelectorAll('.bg-btn').forEach(b => {
+                if (!b.id.startsWith('btn-overlay') && !b.getAttribute('onclick')?.includes('applyPreset')) b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+
+        function updateStudio() {
+            const baseType = document.getElementById('sel-base').value;
+            const dripOpt = document.querySelector('input[name="drip-opt"]:checked').value;
+            const berriesChecked = document.getElementById('chk-berries').checked;
+            const macaronsChecked = document.getElementById('chk-macarons').checked;
+
+            const baseImg = document.getElementById('layer-base');
+            const dripImg = document.getElementById('layer-drip');
+            const berriesImg = document.getElementById('layer-berries');
+            const macaronsImg = document.getElementById('layer-macarons');
+            const label = document.getElementById('active-layers-label');
+
+            // Handle Base flavor simulation
+            if (baseType === 'ube') {
+                baseImg.style.filter = 'none';
+            } else if (baseType === 'fudge') {
+                baseImg.style.filter = 'hue-rotate(240deg) saturate(0.6) brightness(0.4)';
+            } else if (baseType === 'redvelvet') {
+                baseImg.style.filter = 'hue-rotate(70deg) saturate(1.8) brightness(0.85)';
+            } else if (baseType === 'mango') {
+                baseImg.style.filter = 'hue-rotate(180deg) saturate(1.4) brightness(1.2)';
+            }
+
+            // Handle Drip
+            let layersActive = [baseType.toUpperCase() + ' Base'];
+            if (dripOpt === 'none') {
+                dripImg.style.display = 'none';
+            } else if (dripOpt === 'rim') {
+                dripImg.src = 'standalone-additives/chocolate-drip-invisible-rim.png';
+                dripImg.style.display = 'block';
+                layersActive.push('Chocolate Rim Drip');
+            } else if (dripOpt === 'pool') {
+                dripImg.src = 'standalone-additives/chocolate-drip-invisible-pool.png';
+                dripImg.style.display = 'block';
+                layersActive.push('Full Chocolate Glaze Pool');
+            }
+
+            // Handle Berries
+            if (berriesChecked) {
+                berriesImg.style.display = 'block';
+                layersActive.push('Fresh Berries');
+            } else {
+                berriesImg.style.display = 'none';
+            }
+
+            // Handle Macarons
+            if (macaronsChecked) {
+                macaronsImg.style.display = 'block';
+                layersActive.push('Macarons Cluster');
+            } else {
+                macaronsImg.style.display = 'none';
+            }
+
+            label.textContent = layersActive.join(' + ');
+        }
+
+        function applyPreset(preset) {
+            if (preset === 'plain') {
+                document.querySelector('input[name="drip-opt"][value="none"]').checked = true;
+                document.getElementById('chk-berries').checked = false;
+                document.getElementById('chk-macarons').checked = false;
+            } else if (preset === 'drip-only') {
+                document.querySelector('input[name="drip-opt"][value="rim"]').checked = true;
+                document.getElementById('chk-berries').checked = false;
+                document.getElementById('chk-macarons').checked = false;
+            } else if (preset === 'berries-only') {
+                document.querySelector('input[name="drip-opt"][value="none"]').checked = true;
+                document.getElementById('chk-berries').checked = true;
+                document.getElementById('chk-macarons').checked = false;
+            } else if (preset === 'deluxe') {
+                document.querySelector('input[name="drip-opt"][value="rim"]').checked = true;
+                document.getElementById('chk-berries').checked = true;
+                document.getElementById('chk-macarons').checked = true;
+            }
+            updateStudio();
+        }
+    </script>
+</body>
+</html>

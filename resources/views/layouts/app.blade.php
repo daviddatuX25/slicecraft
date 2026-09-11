@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CPRMIS v3</title>
+    <title>SliceCraft · Custom Cake Shop</title>
 
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('font-awesome/css/font-awesome.css') }}" rel="stylesheet">
@@ -16,9 +16,13 @@
     <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" /> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+    {{-- NOTE (change NOT in the worksheet instructions): The midterm Page 3 adds the local Vite bundle for Tailwind and Alpine. Keeping it in the shared layout lets the cake-shop pages use the same app shell while the CSS bundle is scoped to avoid changing the earlier worksheet pages. --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 
-<body class="">
+{{-- NOTE (change NOT in the worksheet instructions): The existing shell stays the only admin shell, but its sidebar and top bar now remain available while long Page 3 screens scroll. --}}
+<body class="fixed-sidebar">
 
     <div id="wrapper">
 
@@ -27,7 +31,7 @@
             <ul class="nav metismenu" id="side-menu">
                 <li class="nav-header">
                     <div class="dropdown profile-element">
-                        <img alt="image" class="rounded-circle" src="img/david_christine_small.jpg"/>
+                        <img alt="image" class="rounded-circle" src="{{ asset('img/david_christine_small.jpg') }}"/>
                         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
                             <span class="block m-t-xs font-bold">David Datu Sarmiento</span>
                             <span class="block m-t-xs font-bold">Christine Lopez</span>
@@ -48,7 +52,7 @@
                 <li><a href="{{ url('/dashboard') }}">Dashboard</a></li>
                 <li><a href="{{ url('/p1') }}">Movies</a></li>
                 <li><a href="{{ url('/p2') }}">Books</a></li>
-                <li><a href="{{ url('/p3') }}">Page 3</a></li>
+                <li><a href="{{ route('cake.dashboard') }}">SliceCraft</a></li>
                 <li><a href="{{ url('/p4') }}">Page 4</a></li>
             </ul>
 
@@ -56,7 +60,7 @@
     </nav>
 
         <div id="page-wrapper" class="gray-bg">
-        <div class="row border-bottom">
+        <div class="row border-bottom app-shell-header">
         <nav class="navbar navbar-static-top  " role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
             <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
@@ -159,7 +163,6 @@
                             <div class="text-center link-block">
                                 <a href="notifications.html" class="dropdown-item">
                                     <strong>See All Alerts</strong>
-                                    <i class="fa fa-angle-right"></i>
                                 </a>
                             </div>
                         </li>
@@ -167,17 +170,28 @@
                 </li>
 
 
-                <li>
-                    <a href="login.html">
-                        <i class="fa fa-sign-out"></i> Log out
-                    </a>
-                </li>
+                @auth
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-link nav-link">
+                                <i class="fa fa-sign-out"></i> Log out
+                            </button>
+                        </form>
+                    </li>
+                @else
+                    <li>
+                        <a href="{{ route('login') }}">
+                            <i class="fa fa-sign-in"></i> Log in
+                        </a>
+                    </li>
+                @endauth
             </ul>
 
         </nav>
         </div>
             @yield('content')
-            <div class="footer">
+            <div class="footer app-shell-footer">
                 <div class="float-right">
                     10GB of <strong>250GB</strong> Free.
                 </div>
@@ -190,15 +204,15 @@
         </div>
 
     <!-- Mainly scripts -->
-    <script src="js/jquery-3.1.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.js"></script>
-    <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
-    <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="{{ asset('js/jquery-3.1.1.min.js') }}"></script>
+    <script src="{{ asset('js/popper.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.js') }}"></script>
+    <script src="{{ asset('js/plugins/metisMenu/jquery.metisMenu.js') }}"></script>
+    <script src="{{ asset('js/plugins/slimscroll/jquery.slimscroll.min.js') }}"></script>
 
     <!-- Custom and plugin javascript -->
-    <script src="js/inspinia.js"></script>
-    <script src="js/plugins/pace/pace.min.js"></script>
+    <script src="{{ asset('js/inspinia.js') }}"></script>
+    <script src="{{ asset('js/plugins/pace/pace.min.js') }}"></script>
 
     <!-- Include Pusher and Toastr JS libraries -->
     <script src="{{ asset('https://js.pusher.com/8.2.0/pusher.min.js') }}"></script>

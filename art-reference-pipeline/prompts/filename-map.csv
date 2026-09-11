@@ -1,0 +1,21 @@
+id,filename,base,size,combination,base_reference,additive_references
+01,classic-ube-minimal.png,Classic Ube,0.5 kg,Minimal cream finish,classic-ube-reference.png,cream-frosting-texture-reference-01
+02,classic-ube-coconut.png,Classic Ube,1 kg,Ube coconut garnish,classic-ube-reference.png,coconut-garnish-reference-01
+03,classic-ube-fruit.png,Classic Ube,1 kg,Ube fresh fruit,classic-ube-reference.png,fresh-fruit-reference-01
+04,classic-ube-floral.png,Classic Ube,1 kg,Ube floral celebration,classic-ube-reference.png,floral-decoration-reference-01
+05,classic-ube-bento.png,Classic Ube,Bento,Ube bento presentation,classic-ube-reference.png,bento-cake-proportion-reference-01
+06,chocolate-fudge-minimal.png,Chocolate Fudge,0.5 kg,Minimal chocolate finish,chocoholic-fudge-reference.png,cream-frosting-texture-reference-01
+07,chocolate-fudge-drip.png,Chocolate Fudge,1 kg,Chocolate drip,chocoholic-fudge-reference.png,chocolate-drip-reference-01
+08,chocolate-fudge-berries.png,Chocolate Fudge,1 kg,Chocolate and berries,chocoholic-fudge-reference.png,mixed-berries-reference-01
+09,chocolate-fudge-macarons.png,Chocolate Fudge,1 kg,Chocolate and macarons,chocoholic-fudge-reference.png,macarons-reference-01
+10,chocolate-fudge-bento.png,Chocolate Fudge,Bento,Bento chocolate presentation,chocoholic-fudge-reference.png,bento-cake-proportion-reference-01
+11,red-velvet-minimal.png,Red Velvet,0.5 kg,Classic cream cheese finish,GENERATE_BASE_REFERENCE,cream-frosting-texture-reference-01
+12,red-velvet-berries.png,Red Velvet,1 kg,Red velvet and berries,GENERATE_BASE_REFERENCE,mixed-berries-reference-01
+13,red-velvet-drip.png,Red Velvet,1 kg,Red velvet drip,GENERATE_BASE_REFERENCE,chocolate-drip-reference-01
+14,red-velvet-celebration.png,Red Velvet,1 kg,Red velvet celebration trim,GENERATE_BASE_REFERENCE,celebration-piping-reference-01
+15,red-velvet-bento.png,Red Velvet,Bento,Bento red velvet presentation,GENERATE_BASE_REFERENCE,bento-cake-proportion-reference-01
+16,mango-cake-minimal.png,Mango Cake,0.5 kg,Mango cream finish,mango-meringue-reference.png,cream-frosting-texture-reference-01
+17,mango-cake-coconut.png,Mango Cake,1 kg,Mango coconut garnish,mango-meringue-reference.png,coconut-garnish-reference-01
+18,mango-cake-tropical-fruit.png,Mango Cake,1 kg,Mango tropical fruit,mango-meringue-reference.png,fresh-fruit-reference-01
+19,mango-cake-celebration.png,Mango Cake,1 kg,Mango celebration finish,mango-meringue-reference.png,celebration-piping-reference-01
+20,mango-cake-bento.png,Mango Cake,Bento,Bento mango presentation,mango-meringue-reference.png,bento-cake-proportion-reference-01

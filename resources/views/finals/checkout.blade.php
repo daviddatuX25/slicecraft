@@ -9,14 +9,14 @@
         <p class="text-sm text-slate-500">Confirm delivery details, schedule date, and place your order</p>
     </div>
 
-    {{-- Teacher & Reviewer Info Banner about Queues and DB Transactions --}}
-    <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4.5 text-xs text-amber-900 flex items-start gap-3">
-        <i class="fa-solid fa-server text-amber-600 text-lg mt-0.5"></i>
-        <div class="space-y-1">
-            <span class="font-bold uppercase tracking-wider text-[11px] text-amber-700">Back-End Rubric 4 Implementation:</span>
-            <p>
-                Submitting this order executes <strong><code>DB::transaction()</code></strong> to ensure atomicity across orders and order details. Upon success, an asynchronous confirmation job (<strong><code>ProcessFinalOrderConfirmation</code></strong>) is dispatched via <strong>Laravel Queues</strong>.
-            </p>
+    {{-- Freshness & Guarantee Banner --}}
+    <div class="rounded-2xl bg-rose-50 border border-rose-100 p-4.5 text-xs text-rose-950 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-shield-heart text-base"></i>
+        </div>
+        <div>
+            <span class="font-bold text-slate-900 block">Freshness & Order Guarantee</span>
+            <p class="text-slate-600 mt-0.5">Every cake is handcrafted and baked to order for your requested schedule. You can track real-time preparation in your orders dashboard.</p>
         </div>
     </div>
 
@@ -168,7 +168,7 @@
             const data = await res.json();
 
             if (res.ok && data.status === 'success') {
-                alert('Order Placed Successfully!\nOrder confirmation has been queued.\nOrder #: ' + data.data.order_number);
+                alert('Order Placed Successfully!\nThank you! Your order has been confirmed and our bakers are preparing it.\nOrder #: ' + data.data.order_number);
                 window.location.href = "{{ route('finals.orders') }}";
             } else {
                 alert('Order failed: ' + (data.message || 'Please check your information.'));
@@ -177,7 +177,7 @@
             }
         } catch (e) {
             console.error(e);
-            alert('Communication error with checkout API.');
+            alert('Unable to place order at this time. Please check your connection and try again.');
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-check-circle mr-1.5"></i> Confirm & Place Order';
         }

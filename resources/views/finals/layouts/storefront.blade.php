@@ -41,16 +41,16 @@
 </head>
 <body class="flex flex-col min-h-full text-slate-800 antialiased">
 
-    {{-- Top Teacher & Reviewer Announcement Banner --}}
+    {{-- Top Store Announcement Banner --}}
     <div class="bg-gradient-to-r from-rose-700 via-rose-600 to-amber-600 text-white text-xs py-1.5 px-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-2">
-                <span class="bg-white/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">Final Exam Upgrade</span>
-                <span class="hidden sm:inline">Prof Elective 5 — Advanced Web Development (Back-End) • ISPSC CAS BSIT</span>
+                <span class="bg-white/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">Fresh Daily</span>
+                <span class="hidden sm:inline">Handcrafted artisan cakes baked fresh every morning • Free scheduled pickup & custom dedications</span>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="{{ route('cake.dashboard') }}" class="font-semibold text-rose-100 hover:text-white underline decoration-rose-300 flex items-center gap-1">
-                    <i class="fa fa-arrow-left"></i> Switch to Midterm Admin View (/p3)
+                <a href="{{ route('cake.dashboard') }}" class="font-medium text-rose-100 hover:text-white flex items-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-id-badge text-xs"></i> Staff Portal
                 </a>
             </div>
         </div>
@@ -68,9 +68,9 @@
                     </div>
                     <div>
                         <div class="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-rose-600 transition-colors">
-                            SliceCraft <span class="text-rose-600">Store</span>
+                            SliceCraft <span class="text-rose-600">Bakery</span>
                         </div>
-                        <p class="text-[11px] font-medium text-slate-400">Customer View • Final Exam</p>
+                        <p class="text-[11px] font-medium text-slate-400">Artisan Bakery & Patisserie</p>
                     </div>
                 </a>
 
@@ -186,17 +186,21 @@
     <footer class="bg-white border-t border-slate-200 mt-auto py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-800">SliceCraft Online Shopping Website</span>
+                <span class="font-bold text-slate-800">SliceCraft Artisan Cakes & Patisserie</span>
                 <span>•</span>
-                <span>Prof Elective 5 (Advanced Web Development: Back-end)</span>
+                <span>Freshly Crafted Celebrations Daily</span>
             </div>
             <div>
-                <span>Ilocos Sur Polytechnic State College (ISPSC) — College of Arts and Sciences (BSIT 2026-2027)</span>
+                <span>&copy; {{ date('Y') }} SliceCraft. Baked fresh with love and prime ingredients.</span>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('cake.dashboard') }}" class="text-rose-600 hover:underline font-semibold">Midterm Admin (/p3)</a>
+                <a href="{{ route('finals.storefront') }}" class="text-slate-600 hover:text-slate-900 transition-colors">Catalog</a>
                 <span>•</span>
-                <a href="/api/v1/customer/products" target="_blank" class="text-slate-600 hover:text-slate-900 font-mono">REST API (/api/v1)</a>
+                <a href="{{ route('finals.cart') }}" class="text-slate-600 hover:text-slate-900 transition-colors">Shopping Cart</a>
+                <span>•</span>
+                <a href="{{ route('cake.dashboard') }}" class="text-rose-600 hover:underline font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-lock text-[10px]"></i> Staff Portal
+                </a>
             </div>
         </div>
     </footer>

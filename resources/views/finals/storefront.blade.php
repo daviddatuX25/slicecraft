@@ -34,8 +34,8 @@
     {{-- Category Pills & Search Bar --}}
     <div id="catalog-grid" class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-b border-slate-200 pb-6">
         <div>
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900">Featured Product Catalog</h2>
-            <p class="text-sm text-slate-500">Showing database-driven cake options (Retrieved via Eloquent ORM)</p>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900">Featured Artisan Collection</h2>
+            <p class="text-sm text-slate-500">Baked fresh to order daily with prime ingredients and complimentary custom dedication</p>
         </div>
 
         {{-- Mobile Search --}}
@@ -177,7 +177,7 @@
             }
         } catch (err) {
             console.error('Error adding to cart:', err);
-            showToast('Error', 'Failed to communicate with cart API.', true);
+            showToast('Notice', 'Unable to add item right now. Please try again.', true);
         }
     }
 

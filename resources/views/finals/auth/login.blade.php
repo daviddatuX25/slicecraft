@@ -71,7 +71,7 @@
                 <a href="{{ route('finals.register') }}" class="font-bold text-rose-600 hover:underline">Register now</a>
             </div>
             <div class="text-[11px] text-slate-400">
-                Staff member? <a href="{{ route('login') }}" class="font-semibold text-slate-600 hover:underline">Log in to Midterm Admin</a>
+                Store staff? <a href="{{ route('login') }}" class="font-semibold text-slate-600 hover:underline">Staff Portal Sign In</a>
             </div>
         </div>
     </div>

@@ -10,6 +10,13 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\BookQueryController;
+
+Route::get('/story', function () {
+    return view('pages.story');
+});
+
 
 // NOTE (change NOT in the worksheet instructions): The Laravel example test
 // expects the root URL to render successfully, so it remains a simple alias
@@ -78,8 +85,51 @@ Route::middleware('auth')->prefix('p3')->group(function (): void {
 
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/cart/{cart}', [CartController::class, 'show'])->name('cart.show');
+    Route::post('/cart/{cart}/submit', [CartController::class, 'submit'])->name('cart.submit');
+    Route::post('/cart/items', [CartController::class, 'storeItem'])->name('cart-items.store');
+    Route::patch('/cart/{cart}/items/{orderItem}/quantity', [CartController::class, 'updateQuantity'])->name('cart-items.quantity.update');
     Route::delete('/cart/{cart}/items/{orderItem}', [CartController::class, 'destroyItem'])->name('cart-items.destroy');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 });
+
+Route::get('/book-query-comparison', [BookQueryController::class, 'index']);
+
+
+Route::get('/story', function () {
+    return view('pages.story');
+});
+
+// --------------------------------------------------------------------------
+// FINAL EXAM: Online Shopping Website (Customer View)
+// --------------------------------------------------------------------------
+use App\Http\Controllers\Finals\CustomerAuthViewController;
+use App\Http\Controllers\Finals\CustomerStorefrontController;
+
+Route::get('/p4', [CustomerStorefrontController::class, 'index'])->name('finals.page4');
+
+Route::prefix('finals')->group(function (): void {
+    // 1. Storefront & Catalog
+    Route::get('/', [CustomerStorefrontController::class, 'index'])->name('finals.storefront');
+    Route::get('/cart', [CustomerStorefrontController::class, 'cart'])->name('finals.cart');
+    Route::post('/cart/items', [CustomerStorefrontController::class, 'addToCart'])->name('finals.cart.items.store');
+    Route::patch('/cart/items/{id}', [CustomerStorefrontController::class, 'updateCartItem'])->name('finals.cart.items.update');
+    Route::delete('/cart/items/{id}', [CustomerStorefrontController::class, 'removeCartItem'])->name('finals.cart.items.destroy');
+    Route::delete('/cart', [CustomerStorefrontController::class, 'clearCart'])->name('finals.cart.clear');
+
+    // Customer Authentication (Dedicated Customer Guard)
+    Route::get('/login', [CustomerAuthViewController::class, 'showLogin'])->name('finals.login');
+    Route::post('/login', [CustomerAuthViewController::class, 'login'])->name('finals.login.post');
+    Route::get('/register', [CustomerAuthViewController::class, 'showRegister'])->name('finals.register');
+    Route::post('/register', [CustomerAuthViewController::class, 'register'])->name('finals.register.post');
+    Route::post('/logout', [CustomerAuthViewController::class, 'logout'])->name('finals.logout');
+
+    // Protected Customer Routes
+    Route::middleware('auth:customer')->group(function (): void {
+        Route::get('/checkout', [CustomerStorefrontController::class, 'checkout'])->name('finals.checkout');
+        Route::get('/orders', [CustomerStorefrontController::class, 'orders'])->name('finals.orders');
+        Route::get('/orders/{id}', [CustomerStorefrontController::class, 'orderDetails'])->name('finals.orders.show');
+    });
+});
+

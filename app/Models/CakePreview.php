@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CakePreview extends Model
 {
-    // NOTE (change NOT in the worksheet instructions): Preview records map
-    // each curated cake combination to a generated local image path.
+    // NOTE (change NOT in the worksheet instructions): Preview records connect
+    // a product option choice to its local cake image.
 
     /** @use HasFactory<CakePreviewFactory> */
     use HasFactory;

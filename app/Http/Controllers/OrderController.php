@@ -7,8 +7,8 @@ use Illuminate\Contracts\View\View;
 
 class OrderController extends Controller
 {
-    // NOTE (change NOT in the worksheet instructions): Order history is kept
-    // separate from the editable CartController flow for clearer shop UX.
+    // NOTE (change NOT in the worksheet instructions): This page shows placed
+    // orders and does not change the editable cart.
     public function index(): View
     {
         $orders = Order::query()

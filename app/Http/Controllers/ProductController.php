@@ -12,8 +12,8 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    // NOTE (change NOT in the worksheet instructions): This controller
-    // supplies the dedicated cake Product CRUD and optional preview uploads.
+    // NOTE (change NOT in the worksheet instructions): This controller handles
+    // the cake Product CRUD and the optional image uploads.
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search', ''));
@@ -58,7 +58,7 @@ class ProductController extends Controller
             'base_price_cents' => $validated['base_price'] * 100,
             'image_path' => $request->hasFile('base_image')
                 ? $this->storePublicImage($request->file('base_image'), $slug, 'base')
-                : 'img/p5.jpg',
+                : config('cake.unavailable_image'),
             'is_active' => $request->boolean('is_active'),
         ]);
 

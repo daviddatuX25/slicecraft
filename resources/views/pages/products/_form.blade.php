@@ -1,4 +1,4 @@
-{{-- NOTE (change NOT in the worksheet instructions): This shared form keeps the Product CRUD fields and adds optional base/combination image uploads for the existing five preview slots. --}}
+{{-- NOTE (change NOT in the worksheet instructions): This form keeps the Product CRUD fields and adds optional image uploads for the preview slots. --}}
 @php
     $isEditing = isset($product);
     $combinationLabels = config('cake.combinations');
@@ -37,7 +37,7 @@
     <section class="rounded-2xl border border-[#eaded6] bg-[#fffaf8] p-4">
         <div>
             <h2 class="text-base font-bold">Product images</h2>
-            <p class="mt-1 text-sm leading-5 text-[#78645d]">Upload a base image and, when available, one image for each curated combination. Leaving a slot blank keeps its local fallback path.</p>
+            <p class="mt-1 text-sm leading-5 text-[#78645d]">Upload a base image and, when available, one image for each visual option. Leaving a slot blank keeps the unavailable artwork.</p>
         </div>
         <div class="mt-4">
             <label for="base_image" class="mb-2 block text-sm font-bold">Base product image</label>

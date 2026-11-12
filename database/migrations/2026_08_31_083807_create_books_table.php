@@ -9,10 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('books', function (Blueprint $table) {
-            $table->id();$table->string('title');
-            $table->longText('description');$table->integer('country_id');
-            $table->integer('stock');$table->decimal('amount', 8, 2);
-            $table->string('photo')->nullable();$table->timestamps();
+            $table->id();
+            $table->string('title');
+            $table->longText('description');
+            $table->integer('country_id');
+            $table->integer('stock');
+            $table->decimal('amount', 8, 2);
+            $table->string('photo')->nullable();
+            $table->timestamps();
         });
     }
 

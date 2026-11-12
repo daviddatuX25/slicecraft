@@ -109,6 +109,30 @@ class MidtermActivityTest extends TestCase
     }
 
     /**
+     * NOTE (change NOT in the worksheet instructions): These assertions keep the optional SliceCraft management navigation consistent across the rubric-facing pages.
+     */
+    public function test_slicecraft_uses_consistent_owner_navigation(): void
+    {
+        $this->seedCakeShop();
+
+        foreach ([
+            route('products.index'),
+            route('customers.index'),
+            route('cart.index'),
+            route('orders.index'),
+        ] as $url) {
+            $this->actingAs($this->admin)
+                ->get($url)
+                ->assertOk()
+                ->assertSee('Products')
+                ->assertSee('Customers')
+                ->assertSee('Current Cart')
+                ->assertSee('Placed Orders')
+                ->assertDontSee('Studio');
+        }
+    }
+
+    /**
      * NOTE (change NOT in the worksheet instructions): These assertions protect the compact visual shell and split-pane hooks added during UI refinement.
      */
     public function test_page_three_uses_the_compact_shell_and_split_panes(): void
@@ -148,12 +172,18 @@ class MidtermActivityTest extends TestCase
             ->assertOk()
             ->assertSee('Current cart')
             ->assertSee($cart->order_number)
-            ->assertSee('View cart products');
+            ->assertSee('View cart products')
+            ->assertDontSee('Submit order');
+
+        $this->actingAs($this->admin)
+            ->get(route('cart.show', $cart))
+            ->assertOk()
+            ->assertDontSee('Submit order');
 
         $this->actingAs($this->admin)
             ->get(route('orders.index'))
             ->assertOk()
-            ->assertSee('Order history')
+            ->assertSee('Placed Orders')
             ->assertSee($placedOrder->order_number)
             ->assertDontSee($cart->order_number);
 
@@ -206,6 +236,48 @@ class MidtermActivityTest extends TestCase
             ->assertRedirect(route('products.index'));
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
+    }
+
+    /**
+     * NOTE (change NOT in the worksheet instructions): These checks keep the optional SliceCraft preview path connected to the existing editable cart flow without adding checkout behavior.
+     */
+    public function test_products_use_real_base_images_and_can_be_added_to_the_current_cart(): void
+    {
+        $this->seedCakeShop();
+
+        $product = Product::where('slug', 'chocolate-fudge')->firstOrFail();
+        $cart = Order::where('status', 'cart')->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->get(route('products.show', $product))
+            ->assertOk()
+            ->assertSee('chocolate-fudge-minimal.png');
+
+        $this->actingAs($this->admin)
+            ->get(route('cake.dashboard'))
+            ->assertOk()
+            ->assertSee('Customer for this cart')
+            ->assertSee('name="customer_id"', false);
+
+        $this->actingAs($this->admin)
+            ->post(route('cart-items.store'), [
+                'product_id' => $product->id,
+                'customer_id' => $cart->customer_id,
+                'quantity' => 1,
+                'size' => 'one-kg',
+                'filling' => 'strawberry',
+                'frosting' => 'buttercream',
+                'decoration' => 'minimal',
+                'toppings' => 'chocolate-drip',
+                'message' => 'Happy birthday',
+            ])
+            ->assertRedirect(route('cart.show', $cart));
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $cart->id,
+            'product_id' => $product->id,
+            'customization_summary' => '1 kg (10–12 servings) · Fresh Strawberry · Buttercream · Minimal Celebration · Chocolate Drip · Message: Happy birthday',
+        ]);
     }
 
     /**
@@ -362,6 +434,22 @@ class MidtermActivityTest extends TestCase
         $this->assertSame(110000, $order->fresh()->total_amount_cents);
     }
 
+    public function test_admin_can_submit_a_cart_as_a_placed_order(): void
+    {
+        $this->seedCakeShop();
+        $cart = Order::where('order_number', 'SC-1001')->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->post(route('cart.submit', $cart))
+            ->assertRedirect(route('orders.show', $cart));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $cart->id,
+            'status' => 'pending',
+        ]);
+        $this->assertTrue($cart->fresh()->isPlaced());
+    }
+
     public function test_cart_item_delete_cannot_cross_order_boundaries(): void
     {
         $this->seedCakeShop();
@@ -376,18 +464,51 @@ class MidtermActivityTest extends TestCase
         $this->assertDatabaseHas('order_items', ['id' => $item->id]);
     }
 
-    public function test_the_curated_preview_set_has_thirteen_records(): void
+    /**
+     * NOTE (change NOT in the worksheet instructions): Quantity editing is a small cart improvement that makes the editable cart easier to manage.
+     */
+    public function test_admin_can_update_cart_item_quantity_and_totals(): void
+    {
+        $this->seedCakeShop();
+        $cart = Order::where('order_number', 'SC-1001')->firstOrFail();
+        $item = $cart->items()->whereHas('product', function ($query): void {
+            $query->where('slug', 'classic-ube');
+        })->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->patch(route('cart-items.quantity.update', [$cart, $item]), ['quantity' => 3])
+            ->assertRedirect(route('cart.show', $cart));
+
+        $this->assertSame(3, $item->fresh()->quantity);
+        $this->assertSame(357000, $item->fresh()->line_total_cents);
+        $this->assertSame(467000, $cart->fresh()->total_amount_cents);
+    }
+
+    public function test_cart_quantity_update_cannot_change_a_placed_order(): void
+    {
+        $this->seedCakeShop();
+        $order = Order::where('order_number', 'SC-1002')->firstOrFail();
+        $item = $order->items()->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->patch(route('cart-items.quantity.update', [$order, $item]), ['quantity' => 3])
+            ->assertNotFound();
+
+        $this->assertSame(1, $item->fresh()->quantity);
+    }
+
+    public function test_the_seeded_preview_set_has_thirty_records(): void
     {
         $this->seedCakeShop();
 
         $this->assertSame(4, Product::count());
-        $this->assertSame(13, CakePreview::whereHas('product', function ($query): void {
+        $this->assertSame(30, CakePreview::whereHas('product', function ($query): void {
             $query->whereIn('slug', ['classic-ube', 'chocolate-fudge', 'red-velvet', 'mango-celebration']);
         })->count());
-        $this->assertSame(5, Product::where('slug', 'classic-ube')->firstOrFail()->cakePreviews()->count());
-        $this->assertSame(6, Product::where('slug', 'chocolate-fudge')->firstOrFail()->cakePreviews()->count());
-        $this->assertSame(2, Product::where('slug', 'red-velvet')->firstOrFail()->cakePreviews()->count());
-        $this->assertSame(0, Product::where('slug', 'mango-celebration')->firstOrFail()->cakePreviews()->count());
+        $this->assertSame(8, Product::where('slug', 'classic-ube')->firstOrFail()->cakePreviews()->count());
+        $this->assertSame(8, Product::where('slug', 'chocolate-fudge')->firstOrFail()->cakePreviews()->count());
+        $this->assertSame(8, Product::where('slug', 'red-velvet')->firstOrFail()->cakePreviews()->count());
+        $this->assertSame(6, Product::where('slug', 'mango-celebration')->firstOrFail()->cakePreviews()->count());
         $this->assertDatabaseHas('cake_previews', [
             'selection_key' => 'rosettes',
             'image_path' => 'images/cakes/classic-ube-rosettes.png',
@@ -398,7 +519,7 @@ class MidtermActivityTest extends TestCase
         ]);
     }
 
-    public function test_missing_combination_assets_use_a_local_base_fallback(): void
+    public function test_missing_combination_assets_use_the_local_unavailable_artwork(): void
     {
         $this->seedCakeShop();
 
@@ -415,7 +536,7 @@ class MidtermActivityTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('cake.dashboard'))
             ->assertOk()
-            ->assertSee('p1.jpg');
+            ->assertSee('preview-unavailable.svg');
     }
 
     public function test_the_existing_books_page_still_renders(): void

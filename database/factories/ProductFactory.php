@@ -25,7 +25,7 @@ class ProductFactory extends Factory
             'description' => fake()->sentence(),
             'category' => 'Classic Cakes',
             'base_price_cents' => fake()->numberBetween(50000, 150000),
-            'image_path' => 'img/p5.jpg',
+            'image_path' => config('cake.unavailable_image'),
             'is_active' => true,
         ];
     }

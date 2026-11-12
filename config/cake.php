@@ -1,6 +1,10 @@
 <?php
 
 return [
+    // NOTE (change NOT in the worksheet instructions): Keep missing visuals
+    // explicit instead of showing an unrelated cake photo as a fallback.
+    'unavailable_image' => 'images/cakes/preview-unavailable.svg',
+
     'options' => [
         'sizes' => [
             [
@@ -119,5 +123,12 @@ return [
         'macarons' => 'Macaron decoration',
         'floral' => 'Floral celebration decoration',
         'bento' => 'Bento-size presentation',
+        'tropical-fruit' => 'Tropical fruit topping',
+        'meringue-symphony' => 'Meringue decoration',
+        'deluxe-rosettes-coconut' => 'Rosettes and toasted coconut',
+        'deluxe-coconut-berries' => 'Toasted coconut and berries',
+        'deluxe-berries-macarons' => 'Berries and macarons',
+        'deluxe-drip-macarons' => 'Chocolate drip and macarons',
+        'deluxe-drip-berries' => 'Chocolate drip and berries',
     ],
 ];

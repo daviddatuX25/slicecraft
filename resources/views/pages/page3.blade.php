@@ -2,7 +2,8 @@
 
 @section('content')
 {{-- NOTE (change NOT in the worksheet instructions): Page 3 is the custom cake-shop frontend requested for the midterm. It keeps the existing app shell and uses Alpine for the preview interaction while Laravel supplies the data. --}}
-<div x-data="cakeBuilder(@js($builderProducts), @js($options))" class="slicecraft-page min-h-screen bg-[#fffaf5] px-3 py-4 text-[#3c2924] sm:px-4 lg:px-6">
+{{-- NOTE (change NOT in the worksheet instructions): Missing base or combination assets use a purpose-built unavailable graphic, never an unrelated cake photo. --}}
+<div x-data="cakeBuilder(@js($builderProducts), @js($options), @js($customers))" class="slicecraft-page min-h-screen bg-[#fffaf5] px-3 py-4 text-[#3c2924] sm:px-4 lg:px-6">
     <div class="mx-auto max-w-7xl">
         @if (session('success'))
             <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
@@ -24,6 +25,16 @@
                 <div>
                     <p class="text-sm font-bold uppercase tracking-[0.2em] text-[#b85c5c]">Build the look</p>
                     <h2 id="builder-heading" class="mt-1 text-xl font-bold text-[#3c2924]">Select your cake base</h2>
+                </div>
+
+                <div class="rounded-2xl border border-[#eaded6] bg-white p-4 shadow-sm">
+                    <label for="cart-customer" class="mb-2 block text-sm font-bold">Customer for this cart</label>
+                    <select id="cart-customer" x-model="selectedCustomerId" class="w-full rounded-xl border-[#d9c5b9] bg-[#fffaf8] px-3 py-2.5 text-sm focus:border-[#b85c5c] focus:ring-[#b85c5c]">
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->name }} · {{ $customer->email }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-xs text-[#917d73]">The Add to cart action saves this cake in the selected customer’s draft cart.</p>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -95,7 +106,7 @@
                         <div class="absolute left-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#b85c5c] backdrop-blur sm:left-5 sm:top-5">Live preview</div>
                         <div class="relative flex min-h-[17rem] items-center justify-center overflow-hidden rounded-2xl bg-[#fdf8f3] p-4 sm:min-h-[20rem] sm:p-5 lg:min-h-[22rem]">
                             <img :src="previewImage" :alt="selectedPreview?.label ?? selectedProduct?.name" class="cake-preview-image max-h-[20rem] w-full object-contain drop-shadow-2xl transition duration-300" />
-                            <div x-show="!selectedPreview?.image_url" class="absolute bottom-6 max-w-[85%] rounded-2xl bg-white/95 px-4 py-2 text-center text-xs font-semibold text-[#78645d] shadow-sm">We can customize this for you. Cake preview not available right now.</div>
+                            <div x-show="!(selectedPreview ? selectedPreview.image_available : selectedProduct?.base_image_available)" class="absolute bottom-6 max-w-[85%] rounded-2xl bg-white/95 px-4 py-2 text-center text-xs font-semibold text-[#78645d] shadow-sm">We can customize this for you. The visual preview is not available yet.</div>
                         </div>
                     </div>
                     <div class="space-y-4 p-4 sm:p-5">
@@ -121,13 +132,28 @@
                                 <span class="mt-1 block font-semibold" x-text="selectedDecorationOption?.label"></span>
                             </div>
                         </div>
-                        <div class="flex items-end justify-between border-t border-[#eaded6] pt-5">
+                        <form method="POST" action="{{ route('cart-items.store') }}" class="border-t border-[#eaded6] pt-5">
+                            @csrf
+                            <input type="hidden" name="product_id" :value="selectedProductId">
+                            <input type="hidden" name="customer_id" :value="selectedCustomerId">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="size" :value="selectedSize">
+                            <input type="hidden" name="filling" :value="selectedFilling">
+                            <input type="hidden" name="frosting" :value="selectedFrosting">
+                            <input type="hidden" name="decoration" :value="selectedDecoration">
+                            <input type="hidden" name="toppings" :value="selectedToppings.join(',')">
+                            <input type="hidden" name="message" :value="message">
+                            <div class="flex items-end justify-between gap-4">
                             <div>
                                 <span class="block text-sm text-[#78645d]">Estimated starting total</span>
                                 <span class="mt-1 block text-2xl font-bold text-[#b85c5c]" x-text="formatPrice(estimatedPriceCents)"></span>
                             </div>
-                            <a href="{{ route('cart.index') }}" class="rounded-full bg-[#3c2924] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#5b3a31]"><i class="fa fa-shopping-basket mr-1" aria-hidden="true"></i> View cart</a>
-                        </div>
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <a href="{{ route('cart.index') }}" class="rounded-xl border border-[#d9c5b9] bg-white px-3 py-2.5 text-sm font-bold text-[#5b3a31] transition hover:border-[#b85c5c]"><i class="fa fa-shopping-basket mr-1" aria-hidden="true"></i> View cart</a>
+                                <button type="submit" class="rounded-xl bg-[#3c2924] px-3 py-2.5 text-sm font-bold text-white transition hover:bg-[#5b3a31]"><i class="fa fa-plus mr-1" aria-hidden="true"></i> Add to cart</button>
+                            </div>
+                            </div>
+                        </form>
 
                     </div>
                 </div>

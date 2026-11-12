@@ -1,0 +1,15 @@
+<!-- NOTE (change NOT in the worksheet instructions): This local artwork is a deliberate unavailable-preview state, so missing cake assets never fall back to an unrelated product photo. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-labelledby="title description">
+  <title id="title">Cake preview unavailable</title>
+  <desc id="description">A simple cake illustration with an image placeholder symbol and the words Preview unavailable.</desc>
+  <rect width="800" height="520" rx="36" fill="#f7e8dc"/>
+  <circle cx="400" cy="225" r="132" fill="#fffaf5" stroke="#d9c5b9" stroke-width="8"/>
+  <path d="M304 270h192l-18 86H322z" fill="#eaded6" stroke="#8f7468" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M294 270c0-34 24-58 55-58 14 0 27 5 36 15 9-21 28-35 51-35s42 14 51 35c9-10 22-15 36-15 31 0 55 24 55 58H294Z" fill="#fffaf5" stroke="#8f7468" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M335 230h38m54 0h38" stroke="#b85c5c" stroke-width="10" stroke-linecap="round"/>
+  <rect x="360" y="298" width="80" height="54" rx="8" fill="#fffaf5" stroke="#8f7468" stroke-width="7"/>
+  <circle cx="382" cy="317" r="7" fill="#b85c5c"/>
+  <path d="m372 342 17-16 13 11 16-18 15 23" fill="none" stroke="#b85c5c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="400" y="425" text-anchor="middle" fill="#5b3a31" font-family="Arial, sans-serif" font-size="30" font-weight="700">Preview unavailable</text>
+  <text x="400" y="462" text-anchor="middle" fill="#78645d" font-family="Arial, sans-serif" font-size="19">This custom combination can still be ordered.</text>
+</svg>

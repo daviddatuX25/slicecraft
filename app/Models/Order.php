@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    // NOTE (change NOT in the worksheet instructions): Orders provide the
-    // persisted cart records needed by the midterm Manage Cart rubric.
+    // NOTE (change NOT in the worksheet instructions): Orders store the cart
+    // records needed by the midterm Manage Cart requirement.
 
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
@@ -72,5 +72,10 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->items();
     }
 }

@@ -2,11 +2,12 @@
 
 @section('content')
 {{-- NOTE (change NOT in the worksheet instructions): This Tailwind page is the polished Page 3 Product CRUD surface required by the midterm rubric. --}}
+{{-- NOTE (change NOT in the worksheet instructions): Missing product images show the shared unavailable artwork instead of an unrelated cake photo. --}}
 <div class="slicecraft-page min-h-screen bg-[#fffaf5] px-3 py-4 text-[#3c2924] sm:px-4 lg:px-6">
     <div class="mx-auto max-w-7xl">
         <header class="mb-4 flex flex-col gap-3 border-b border-[#eaded6] pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#b85c5c]">Cake Shop · Page 3</p>
+                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#b85c5c]">SliceCraft · Owner / Admin</p>
                 <h1 class="mt-1 text-3xl font-bold">Products</h1>
                 <p class="mt-2 text-[#78645d]">Search, view, add, update, and remove cake bases.</p>
             </div>
@@ -30,7 +31,7 @@
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 @foreach ($products as $product)
                     <article class="overflow-hidden rounded-3xl border border-[#eaded6] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                        <img src="{{ asset($product->image_path ?: 'img/p1.jpg') }}" alt="{{ $product->name }}" class="h-40 w-full object-cover">
+                        <img src="{{ asset($product->image_path && is_file(public_path($product->image_path)) ? $product->image_path : config('cake.unavailable_image')) }}" alt="{{ $product->image_path && is_file(public_path($product->image_path)) ? $product->name : $product->name.' image unavailable' }}" class="h-40 w-full object-cover">
                         <div class="p-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div>

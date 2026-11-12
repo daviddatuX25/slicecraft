@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
-    // NOTE (change NOT in the worksheet instructions): Individual order items
-    // allow the admin to delete one cart product without deleting its order.
+    // NOTE (change NOT in the worksheet instructions): Each item can be
+    // deleted without deleting the other items in the cart.
 
     /** @use HasFactory<OrderItemFactory> */
     use HasFactory;

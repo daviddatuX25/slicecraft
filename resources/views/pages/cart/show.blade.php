@@ -21,9 +21,17 @@
             <section class="space-y-4">
                 @forelse ($cart->items as $item)
                     <article class="flex flex-col gap-4 rounded-3xl border border-[#eaded6] bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-                        <img src="{{ asset($item->product?->image_path ?: 'img/p1.jpg') }}" alt="{{ $item->product_name_snapshot }}" class="h-24 w-full rounded-2xl object-cover sm:w-32">
+                        <img src="{{ asset($item->product?->image_path && is_file(public_path($item->product->image_path)) ? $item->product->image_path : config('cake.unavailable_image')) }}" alt="{{ $item->product_name_snapshot }}" class="h-24 w-full rounded-2xl object-cover sm:w-32">
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#b85c5c]">Quantity {{ $item->quantity }}</p>
+                            <form method="POST" action="{{ route('cart-items.quantity.update', [$cart, $item]) }}" class="flex flex-wrap items-end gap-2">
+                                @csrf
+                                @method('PATCH')
+                                <div>
+                                    <label for="quantity-{{ $item->id }}" class="block text-xs font-bold uppercase tracking-[0.16em] text-[#b85c5c]">Quantity</label>
+                                    <input id="quantity-{{ $item->id }}" name="quantity" type="number" min="1" max="20" value="{{ $item->quantity }}" class="mt-1 w-20 rounded-lg border-[#d9c5b9] bg-[#fffaf8] px-2 py-1.5 text-sm focus:border-[#b85c5c] focus:ring-[#b85c5c]">
+                                </div>
+                                <button type="submit" class="rounded-lg border border-[#d9c5b9] bg-white px-2.5 py-1.5 text-xs font-bold text-[#5b3a31] hover:border-[#b85c5c]"><i class="fa fa-refresh mr-1" aria-hidden="true"></i> Update</button>
+                            </form>
                             <h2 class="mt-1 text-lg font-bold">{{ $item->product_name_snapshot }}</h2>
                             <p class="mt-2 text-sm leading-5 text-[#78645d]">{{ $item->customization_summary ?: 'Standard cake configuration' }}</p>
                             <p class="mt-2 font-bold text-[#b85c5c]">₱{{ number_format($item->line_total_cents / 100, 2) }}</p>
@@ -50,7 +58,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-[#78645d]">Products</dt><dd class="font-bold">{{ $cart->items->count() }}</dd></div>
                     <div class="flex justify-between gap-4 border-t border-[#eaded6] pt-3"><dt class="font-bold">Total</dt><dd class="text-lg font-bold text-[#b85c5c]">₱{{ number_format($cart->total_amount_cents / 100, 2) }}</dd></div>
                 </dl>
-                <p class="mt-4 rounded-2xl bg-[#fffaf8] p-3 text-xs leading-5 text-[#78645d]">Remove one cart product at a time. The draft remains available and its total is recalculated after each deletion.</p>
+                <p class="mt-4 rounded-2xl bg-[#fffaf8] p-3 text-xs leading-5 text-[#78645d]">Change a quantity or remove one cart product at a time. The draft remains available and its total is recalculated after each change.</p>
             </aside>
         </div>
     </div>

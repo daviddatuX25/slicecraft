@@ -20,7 +20,7 @@ class BookFactory extends Factory
             'title' => $this->faker->sentence(),
             'description' => $this->faker->text(),
             'country_id' => $this->faker->numberBetween(1, 100),
-            'stock' => $this->faker->numberBetween(1, 1000),             'amount' =>$this->faker->randomFloat(2, 10, 9999),
+            'stock' => $this->faker->numberBetween(1, 1000),             'amount' => $this->faker->randomFloat(2, 10, 9999),
             'photo' => $this->faker->randomElement($covers),
         ];
     }

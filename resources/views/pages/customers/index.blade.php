@@ -6,7 +6,7 @@
     <div class="mx-auto max-w-6xl">
         <header class="mb-4 flex flex-col gap-3 border-b border-[#eaded6] pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#b85c5c]">Cake Shop · Page 3</p>
+                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#b85c5c]">SliceCraft · Owner / Admin</p>
                 <h1 class="mt-1 text-3xl font-bold">Customers</h1>
                 <p class="mt-2 text-[#78645d]">View customer details and keep their order status current.</p>
             </div>

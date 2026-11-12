@@ -1,7 +1,7 @@
 {{-- NOTE (change NOT in the worksheet instructions): This shared navigation keeps the bounded Page 3 owner/admin modules in one consistent order while preserving the midterm's Product, Customer, and Cart requirements. --}}
 @php
     $navItems = [
-        ['route' => 'cake.dashboard', 'label' => 'Products', 'icon' => 'fa-cubes', 'active' => request()->routeIs('cake.dashboard', 'products.*')],
+        ['route' => 'products.index', 'label' => 'Products', 'icon' => 'fa-cubes', 'active' => request()->routeIs('cake.dashboard', 'products.*')],
         ['route' => 'customers.index', 'label' => 'Customers', 'icon' => 'fa-users', 'active' => request()->routeIs('customers.*')],
         ['route' => 'cart.index', 'label' => 'Current Cart', 'icon' => 'fa-shopping-basket', 'active' => request()->routeIs('cart.*')],
         ['route' => 'orders.index', 'label' => 'Placed Orders', 'icon' => 'fa-list-alt', 'active' => request()->routeIs('orders.*')],

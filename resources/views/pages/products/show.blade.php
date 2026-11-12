@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-{{-- NOTE (change NOT in the worksheet instructions): The product detail page makes the rubric's View Product action explicit and shows the five curated preview mappings. --}}
+{{-- NOTE (change NOT in the worksheet instructions): The product detail page makes the rubric's View Product action explicit and shows the available preview mappings. --}}
+{{-- NOTE (change NOT in the worksheet instructions): Missing product and combination images show the shared unavailable artwork instead of an unrelated cake photo. --}}
 <div class="slicecraft-page min-h-screen bg-[#fffaf5] px-3 py-4 text-[#3c2924] sm:px-4 lg:px-6">
     <div class="mx-auto max-w-6xl">
         @if (session('success'))
@@ -25,7 +26,7 @@
 
         <div class="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
             <section class="overflow-hidden rounded-3xl border border-[#eaded6] bg-white shadow-sm">
-                <img src="{{ asset($product->image_path ?: 'img/p1.jpg') }}" alt="{{ $product->name }}" class="h-64 w-full object-cover">
+                <img src="{{ asset($product->image_path && is_file(public_path($product->image_path)) ? $product->image_path : config('cake.unavailable_image')) }}" alt="{{ $product->image_path && is_file(public_path($product->image_path)) ? $product->name : $product->name.' image unavailable' }}" class="h-64 w-full object-cover">
                 <div class="p-4">
                     <span class="rounded-full bg-[#fff0ed] px-3 py-1 text-xs font-bold text-[#984b4b]">{{ $product->is_active ? 'Active product' : 'Hidden product' }}</span>
                     <p class="mt-4 text-sm leading-6 text-[#78645d]">{{ $product->description }}</p>
@@ -40,12 +41,12 @@
                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                     @foreach ($product->cakePreviews as $preview)
                         <div class="overflow-hidden rounded-2xl border border-[#eaded6] bg-[#fffaf8]">
-                            <img src="{{ asset($preview->hasAvailableImage() ? $preview->image_path : ($product->image_path ?: 'img/p1.jpg')) }}" alt="{{ $preview->alt_text }}" class="h-28 w-full object-cover">
+                            <img src="{{ asset($preview->hasAvailableImage() ? $preview->image_path : config('cake.unavailable_image')) }}" alt="{{ $preview->hasAvailableImage() ? $preview->alt_text : $preview->alt_text.' preview unavailable' }}" class="h-28 w-full object-cover">
                             <div class="p-3">
                                 <p class="text-xs font-bold uppercase tracking-[0.14em] text-[#b85c5c]">{{ $preview->selection_key }}</p>
                                 <p class="mt-1 text-sm font-semibold">{{ $preview->alt_text }}</p>
                                 @if (! $preview->hasAvailableImage())
-                                    <p class="mt-2 text-xs text-[#917d73]">Base fallback in use</p>
+                                    <p class="mt-2 text-xs text-[#917d73]">Preview artwork is not available yet</p>
                                 @endif
                             </div>
                         </div>

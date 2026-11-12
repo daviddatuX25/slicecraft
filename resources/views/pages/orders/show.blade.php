@@ -21,7 +21,7 @@
             <section class="space-y-4">
                 @forelse ($order->items as $item)
                     <article class="flex flex-col gap-4 rounded-3xl border border-[#eaded6] bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-                        <img src="{{ asset($item->product?->image_path ?: 'img/p1.jpg') }}" alt="{{ $item->product_name_snapshot }}" class="h-24 w-full rounded-2xl object-cover sm:w-32">
+                        <img src="{{ asset($item->product?->image_path && is_file(public_path($item->product->image_path)) ? $item->product->image_path : config('cake.unavailable_image')) }}" alt="{{ $item->product_name_snapshot }}" class="h-24 w-full rounded-2xl object-cover sm:w-32">
                         <div class="min-w-0 flex-1">
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#b85c5c]">Quantity {{ $item->quantity }}</p>
                             <h2 class="mt-1 text-lg font-bold">{{ $item->product_name_snapshot }}</h2>

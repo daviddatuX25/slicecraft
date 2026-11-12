@@ -21,7 +21,7 @@ class ProductSeeder extends Seeder
                 'description' => 'Soft ube cake with a smooth cream finish and a gentle Filipino-inspired sweetness.',
                 'category' => 'Classic Cakes',
                 'base_price_cents' => 99000,
-                'image_path' => 'img/p1.jpg',
+                'image_path' => 'images/cakes/classic-ube-minimal.png',
                 'is_active' => true,
             ],
             [
@@ -30,7 +30,7 @@ class ProductSeeder extends Seeder
                 'description' => 'Rich chocolate layers made for chocolate lovers and celebration tables.',
                 'category' => 'Classic Cakes',
                 'base_price_cents' => 95000,
-                'image_path' => 'img/p2.jpg',
+                'image_path' => 'images/cakes/chocolate-fudge-minimal.png',
                 'is_active' => true,
             ],
             [
@@ -39,7 +39,7 @@ class ProductSeeder extends Seeder
                 'description' => 'Deep red velvet layers paired with a smooth cream-cheese-style finish.',
                 'category' => 'Classic Cakes',
                 'base_price_cents' => 98000,
-                'image_path' => 'img/p3.jpg',
+                'image_path' => 'images/cakes/red-velvet-minimal.png',
                 'is_active' => true,
             ],
             [
@@ -48,7 +48,7 @@ class ProductSeeder extends Seeder
                 'description' => 'A bright mango-forward cake with a light cream finish for sunny celebrations.',
                 'category' => 'Classic Cakes',
                 'base_price_cents' => 102000,
-                'image_path' => 'img/p4.jpg',
+                'image_path' => 'images/cakes/mango-cake-minimal.png',
                 'is_active' => true,
             ],
         ];

@@ -44,6 +44,8 @@ class DatabaseSeeder extends Seeder
             CakePreviewSeeder::class,
             CustomerSeeder::class,
             OrderSeeder::class,
+            MidtermLabExamSeeder::class,
+            FinalExamCustomerSeeder::class,
         ]);
     }
 }

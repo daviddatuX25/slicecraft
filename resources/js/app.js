@@ -7,10 +7,12 @@ import Alpine from 'alpinejs';
 // converting the Blade application into a single-page app.
 window.Alpine = Alpine;
 
-window.cakeBuilder = (products, options) => ({
+window.cakeBuilder = (products, options, customers) => ({
     products,
     options,
+    customers,
     selectedProductId: products[0]?.id ?? null,
+    selectedCustomerId: customers[0]?.id ?? null,
     selectedSize: 'one-kg',
     selectedFilling: 'strawberry',
     selectedFrosting: 'buttercream',
@@ -31,12 +33,28 @@ window.cakeBuilder = (products, options) => ({
     get previewKey() {
         const previews = this.selectedProduct?.previews ?? {};
 
+        const hasTopping = (code) => this.selectedToppings.includes(code);
+
+        const deluxeKeys = [
+            [hasTopping('chocolate-drip') && hasTopping('macarons'), 'deluxe-drip-macarons'],
+            [hasTopping('chocolate-drip') && hasTopping('fresh-fruit'), 'deluxe-drip-berries'],
+            [hasTopping('fresh-fruit') && hasTopping('macarons'), 'deluxe-berries-macarons'],
+            [hasTopping('coconut') && hasTopping('fresh-fruit'), 'deluxe-coconut-berries'],
+            [this.selectedDecoration === 'celebration' && hasTopping('coconut'), 'deluxe-rosettes-coconut'],
+        ];
+
+        const deluxeKey = deluxeKeys.find(([isSelected, key]) => isSelected && previews[key]);
+
+        if (deluxeKey) {
+            return deluxeKey[1];
+        }
+
         if (this.selectedSize === 'bento') {
             return 'bento';
         }
 
         const toppingKeys = {
-            'fresh-fruit': ['fruit', 'berries'],
+            'fresh-fruit': ['fruit', 'berries', 'tropical-fruit'],
             coconut: ['coconut'],
             'chocolate-drip': ['drip', 'web-glaze'],
             macarons: ['macarons'],

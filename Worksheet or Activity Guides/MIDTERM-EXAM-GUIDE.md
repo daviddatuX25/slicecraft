@@ -1,256 +1,246 @@
-# Midterm Exam Implementation and Defense Guide
+# Midterm Exam Guide — SliceCraft Cake Shop
 
-This guide follows `Midterm-Exam.md` and describes the completed Page 3 implementation.
-The application is a small admin-side cake shop. The main generated cake assets are intentionally deferred because they are being produced separately from `art-reference-pipeline/`.
+## 1. Ano ang project?
 
-## 1. What the examiner should see
+Ang SliceCraft ay cake shop admin page sa existing Laravel app.
 
-The cake shop is inside the existing application shell:
+May login, cake preview, products, customers, cart, at order history.
+Ginamit ang existing sidebar at layout para hindi gumawa ng second admin app.
+
+Main page: `/p3`
 
 ```text
-Existing app shell
+Existing app
 ├── Dashboard
-├── Movies (Page 1)
-├── Books (Page 2)
-└── Cake Shop (Page 3)
-    ├── Custom Cake Studio / live preview
-    ├── Manage Product
-    ├── Manage Customer
-    ├── Manage Cart (rubric)
-    │   ├── View Cart Products
-    │   └── Delete Cart Products
-    └── Order History (read-only support view)
+├── Movies / Page 1
+├── Books / Page 2
+└── Cake Shop / Page 3
+    ├── Custom Cake Studio
+    ├── Products
+    ├── Customers
+    ├── Cart
+    └── Order History
 ```
 
-There is only one sidebar. Page 3 adds its own compact links for Studio, Products, Customers, Cart, and Orders, but it does not create a second admin shell.
+Layman explanation: Parang online admin notebook ito. Dito minamanage ng staff ang cakes, customers, at orders.
 
-The four seeded cake bases are:
+Seeded cake bases:
 
 ```text
-1. Classic Ube
-2. Chocolate Fudge
-3. Red Velvet
-4. Mango Celebration
+Classic Ube
+Chocolate Fudge
+Red Velvet
+Mango Celebration
 ```
 
-The current reviewed preview set is intentionally sparse while image generation is in progress:
+Kung wala pang generated preview image, base cake image muna ang ipinapakita.
 
-```text
-minimal finish
-coconut or fruit garnish
-premium drip or topping
-floral or celebration decoration
-Bento-size presentation
-```
+---
 
-There are currently 13 deployed preview images: 5 for Classic Ube, 6 for Chocolate Fudge, 2 for Red Velvet, and none yet for Mango Celebration. The builder reads each product's available `CakePreview` rows, shows only reviewed combinations, and uses the product base image when a future preview is absent.
+## 2. Rubric: saan makikita?
 
-## 2. Rubric map
-
-| Rubric row | Working evidence | Main files |
+| Requirement | Simpleng explanation | Main files |
 |---|---|---|
-| Login - 10 points | Username/password are checked against `users`; failed login stays out; successful login reaches `/p3` | `AuthController`, users migration, login view, routes |
-| Manage Product - 20 points | Search/view, add, update, and delete use persisted Product records | `Product`, `ProductController`, product views, products migration |
-| Manage Customer - 10 points | Customer list/detail is visible and status changes persist | `Customer`, `CustomerController`, customer views |
-| Manage Cart - 10 points | A draft cart shows two cart products; one cart item can be deleted while the cart and sibling remain. Placed orders are shown separately as read-only history. | `Order`, `OrderItem`, `CartController`, `OrderController`, cart/order views |
-| Question and Answer - 10 points | The request flow, MVC roles, validation, database, and frontend boundary can be explained | This guide |
+| Login | May valid at invalid username/password | `AuthController`, login view, `users` table |
+| Manage Product | Add, view, edit, delete cakes | `ProductController`, Product views |
+| Manage Customer | View customers at palitan ang status | `CustomerController`, Customer views |
+| Manage Cart | Tingnan, baguhin ang quantity, at mag-delete ng isang cart item | `CartController`, Cart views |
+| Question and Answer | Maipaliwanag ang MVC, routes, database, at flow | This guide |
+
+---
 
 ## 3. File map
 
-Authentication:
+### Login
 
 ```text
 routes/web.php
-  Maps GET /login, POST /login, POST /logout, and protected /p3 routes.
-
-app/Http/Controllers/AuthController.php
-  Validates username/password, calls Auth::attempt(), regenerates the session,
-  and invalidates the session on logout.
-
-app/Models/User.php
-  Keeps the existing Laravel user model and adds username to fillable fields.
-
-database/migrations/*_add_username_to_users_table.php
-  Adds a nullable, unique username and backfills existing users safely.
-
-resources/views/layouts/guest.blade.php
-resources/views/auth/login.blade.php
-  Render the login form without adding the application sidebar.
 ```
+Nagmamapa ng login, logout, at protected Page 3 routes.
 
-Cake shop and preview foundation:
+```text
+app/Http/Controllers/AuthController.php
+```
+Tumatanggap ng login form at gumagamit ng `Auth::attempt()`.
+
+```text
+app/Models/User.php
+```
+Model ng users table. Kasama rito ang username.
+
+```text
+resources/views/auth/login.blade.php
+resources/views/layouts/guest.blade.php
+```
+Ito ang login page at simple guest layout.
+
+### Cake shop
 
 ```text
 app/Http/Controllers/CakeShopController.php
-  Loads active products and their available preview mappings for Page 3.
+```
+Kumukuha ng active cakes at preview images.
 
+```text
 app/Models/Product.php
 app/Models/CakePreview.php
-  Represent the cake bases and their curated image mappings.
-
-config/cake.php
-  Stores the small, readable option catalog: sizes, fillings, frostings,
-  toppings, and decorations.
-
-resources/views/pages/page3.blade.php
-  Keeps the preview as the main visual surface and renders the options.
-
-resources/js/app.js
-  Registers the small Alpine cakeBuilder component. It changes selected
-  products, combinations, options, and the browser-side estimate only.
-
-resources/css/app.css
-  Loads Tailwind theme/utilities without global preflight so the earlier
-  Bootstrap/INSPINIA worksheet pages are not reset.
 ```
+Models para sa cakes at cake preview mappings.
 
-Product module:
+```text
+config/cake.php
+```
+Listahan ng sizes, fillings, frostings, toppings, at decorations.
+
+```text
+resources/views/pages/page3.blade.php
+```
+Main cake studio page.
+
+```text
+resources/js/app.js
+```
+Maliit na Alpine component para sa browser preview at estimate.
+
+```text
+resources/css/app.css
+```
+Tailwind styles para sa Page 3.
+
+### Products
 
 ```text
 database/migrations/*_create_products_table.php
 database/factories/ProductFactory.php
 database/seeders/ProductSeeder.php
 app/Http/Controllers/ProductController.php
-resources/views/pages/products/index.blade.php
-resources/views/pages/products/create.blade.php
-resources/views/pages/products/edit.blade.php
-resources/views/pages/products/show.blade.php
-resources/views/pages/products/_form.blade.php
+resources/views/pages/products/
 ```
 
-The shared Product form also accepts an optional base image and one optional upload for each configured combination key. Files are validated and stored on Laravel's public disk; an omitted slot is not inserted as a fake preview, so the seeded presentation reflects only reviewed combinations.
+Migration = design ng table.
+Factory = fake sample data.
+Seeder = naglalagay ng sample data.
+Controller = CRUD logic.
+Views = mga page na nakikita ng user.
 
-Customer module:
+### Customers
 
 ```text
 database/migrations/*_create_customers_table.php
 database/factories/CustomerFactory.php
 database/seeders/CustomerSeeder.php
 app/Http/Controllers/CustomerController.php
-resources/views/pages/customers/index.blade.php
-resources/views/pages/customers/show.blade.php
+resources/views/pages/customers/
 ```
 
-Cart and order-history module:
+### Cart at orders
 
 ```text
 database/migrations/*_create_orders_table.php
 database/migrations/*_create_order_items_table.php
-database/factories/OrderFactory.php
-database/factories/OrderItemFactory.php
-database/seeders/OrderSeeder.php
 app/Http/Controllers/CartController.php
 app/Http/Controllers/OrderController.php
-resources/views/pages/cart/index.blade.php
-resources/views/pages/cart/show.blade.php
-resources/views/pages/orders/index.blade.php
-resources/views/pages/orders/show.blade.php
+resources/views/pages/cart/
+resources/views/pages/orders/
 ```
 
-Testing:
+Ang `cart` ay editable draft. Ang placed orders ay read-only history.
+
+### Tests
 
 ```text
 tests/Feature/MidtermActivityTest.php
-  Covers guest protection, login, logout, preview rendering, product CRUD,
-  validation, customer status validation, order-item deletion, boundaries,
-  the reviewed preview set, fallback behavior, image uploads, and the existing /p2 page.
+```
+Tinetest nito ang login, routes, CRUD, validation, cart deletion, uploads, at existing pages.
+
+---
+
+## 4. Simple MVC explanation
+
+```text
+Browser
+   |
+   v
+Route
+   |
+   v
+Controller
+   |
+   +--> Model --> Database
+   |
+   v
+Blade View
+   |
+   v
+HTML page sa browser
 ```
 
-## 4. Database design
+Layman explanation:
+
+- Route = receptionist. Sinasabi kung saan pupunta ang request.
+- Controller = worker. Gumagawa ng actual instructions.
+- Model = translator. Kumokonekta sa database.
+- Database = storage ng records.
+- View = screen na nakikita ng user.
+
+### Example: open `/p3`
+
+```text
+GET /p3
+  -> routes/web.php
+  -> auth middleware checks kung naka-login
+  -> CakeShopController@index
+  -> Product model gets cakes and previews
+  -> page3.blade.php displays the studio
+```
+
+### Example: add product
+
+```text
+POST /p3/products
+  -> ProductController@store
+  -> validate input
+  -> convert price to cents
+  -> save Product record
+  -> redirect sa product list
+```
+
+Layman explanation: Pinapasok ang form sa controller, chine-check ang data, sine-save sa database, tapos bumabalik sa listahan.
+
+---
+
+## 5. Database design
 
 ```text
 users
-  id, name, username, email, password, timestamps
+  login accounts
 
 products
-  id, name, slug, description, category, base_price_cents,
-  image_path, is_active, timestamps
+  cake bases and prices
 
 cake_previews
-  id, product_id, selection_key, image_path, alt_text, timestamps
-  unique(product_id, selection_key)
+  image mapping ng cake combinations
 
 customers
-  id, name, email, phone, address, status, timestamps
+  customer information and status
 
 orders
-  id, order_number, customer_id, status, total_amount_cents,
-  notes, scheduled_at, timestamps
+  cart or placed order header
 
 order_items
-  id, order_id, product_id, product_name_snapshot, quantity,
-  unit_price_cents, line_total_cents, customization_summary, timestamps
+  individual products inside an order
 ```
 
-The new migrations are additive. The existing Books table is not repurposed or removed.
-Money is stored as integer cents. For example, PHP 1,250.00 is stored as `125000`.
+Ang `order_items` ay hiwalay para isang item lang ang puwedeng i-delete sa cart.
 
-The active presentation database is the existing Laragon MySQL database. PHPUnit uses its clean test database configuration. Do not run `migrate:fresh` against the presentation database.
+Ang money ay integer cents para walang decimal rounding problem.
+Halimbawa: PHP 1,250.00 = `125000` sa database.
 
-## 5. Request flow to explain
+Ang bagong tables ay additive. Hindi binura o pinalitan ang existing Books table.
 
-A normal Page 3 request follows this path:
+---
 
-```text
-Browser: GET /p3
-        |
-        v
-routes/web.php
-        |
-        | auth middleware checks the session
-        v
-CakeShopController@index
-        |
-        | Product::query()->with('cakePreviews')
-        v
-MySQL: products + cake_previews
-        |
-        v
-resources/views/pages/page3.blade.php
-        |
-        | Blade prints product/preview data into Alpine's initial state
-        v
-Browser displays the preview-first interface
-```
-
-A Product CRUD request follows this path:
-
-```text
-Browser submits POST /p3/products
-        |
-        v
-ProductController@store
-        |
-        | $request->validate(...)
-        | server creates slug and converts pesos to cents
-        v
-Product::create(...)
-        |
-        v
-products table
-        |
-        v
-redirect back to the Product list with a flash message
-```
-
-When image files are included in Product Create or Edit, `ProductController` validates the files, stores them under `storage/app/public/cakes/products/<product-slug>/`, saves the public `storage/...` path, and maintains the five related `cake_previews` rows.
-
-An individual cart product deletion follows this path:
-
-```text
-DELETE /p3/cart/{cart}/items/{orderItem}
-        |
-        v
-CartController@destroyItem
-        |
-        | confirms the item belongs to the requested order
-        | deletes only that order_items row
-        | recalculates the draft cart total
-        v
-redirect to the same cart detail page
-```
-
-## 6. Exact routes
+## 6. Routes
 
 ```text
 GET|HEAD  /login
@@ -278,107 +268,109 @@ GET|HEAD  /p3/orders
 GET|HEAD  /p3/orders/{order}
 ```
 
-All `/p3/*` routes use `auth` middleware. Login routes use `guest` middleware. Forms include CSRF tokens, and state changes use POST, PUT/PATCH, or DELETE rather than GET.
+Lahat ng `/p3/*` routes ay may `auth` middleware.
+Ibig sabihin, kailangan munang mag-login bago ma-access ang Page 3.
 
-The examination does not state that authentication must be applied to every page in the existing application. Therefore authentication is deliberately scoped to the new Page 3 admin module. The earlier `/p1`, `/p2`, and `/dashboard` pages remain public so the previous worksheet activities continue to work.
+Forms use `@csrf` para hindi basta-basta ma-submit ng ibang website.
 
-## 7. Presentation sequence
+---
 
-Use this order so the examiner sees every required module without depending on image generation.
+## 7. Recommended demo order
 
-1. Start Laragon and confirm MySQL is running.
+1. Start Laragon at siguraduhing running ang MySQL.
 2. Open `/login`.
-3. Submit one failed login to show the generic validation error.
-4. Use the seeded local credentials:
+3. Magpakita ng isang failed login.
+4. Gamitin ang seeded account:
 
 ```text
 Username: slicecraft-admin
 Password: slicecraft-demo
 ```
 
-5. Show that successful login opens `/p3`.
-6. On the large preview, switch between all four bases and the available reviewed combinations. Explain that unfinished products show their base image until more preview files are added through the seeder.
-7. Change Bento, filling, frosting, toppings, decoration, and message. Explain that Alpine updates the visual summary and estimate in the browser; server-side persistence remains Laravel's responsibility.
-8. Open Products. Search for `Ube`.
-9. Add a temporary fifth product, refresh, edit its name/price, refresh, then delete it. Refresh again to prove it is gone.
-10. Open Customers. View `Juan Dela Cruz`, review the customer overview/current-cart/order-history sections, change status from Pending to Active, refresh, and show that the value remains.
-11. Open Cart. Open draft cart `SC-1001` and show its two cart products.
-12. Delete only the Classic Ube item from Cart. Confirm the draft cart and the other item remain and the total is recalculated.
-13. Open Order History. Open placed order `SC-1002` and show that it is read-only.
-14. Log out and show that `/p3` now returns to the login screen.
-15. Explain the request flow using the diagrams in this guide.
+5. Ipakita na napupunta sa `/p3` pagkatapos ng successful login.
+6. I-switch ang four cake bases at ilang cake options.
+7. Open Products, mag-search ng `Ube`.
+8. Add temporary product, edit ito, tapos delete.
+9. Open Customers at palitan ang status ni `Juan Dela Cruz`.
+10. Open Cart at ipakita ang `SC-1001`.
+11. Delete ang isang cart item. Ipakita na natira ang sibling item at nagbago ang total.
+12. Open Order History at ipakitang read-only ang placed order `SC-1002`.
+13. Logout at ipakitang hindi na mabubuksan ang `/p3` nang walang login.
+14. Ipaliwanag ang MVC flow gamit ang diagram sa guide.
+
+---
 
 ## 8. Short defense answers
 
-Q: Why did you keep the cake shop on Page 3?
+### Q: Bakit `/p3` ang cake shop?
 
-A: The existing application shell is part of the activity context. Keeping the feature at `/p3` reuses the provided sidebar and avoids creating a second admin application.
+A: Existing activity shell na ang gamit. Reuse lang ang sidebar at layout para consistent ang application.
 
-Q: Why is Product separate from Book?
+### Q: Bakit hiwalay ang Product at Book?
 
-A: Books are the existing Worksheet 2.4 data. A dedicated Product model keeps the prior worksheet working and gives the midterm its own cake catalog without changing the meaning of the Books table.
+A: Ang Books ay para sa Worksheet 2.4. Ang Product ay sariling cake catalog ng midterm para hindi masira ang previous activity.
 
-Q: What does a migration do?
+### Q: Ano ang migration?
 
-A: It describes a repeatable database schema change. The new migrations add the cake shop tables and the username field without deleting the existing Books data.
+A: Blueprint ito ng database table. Dito sinasabi kung anong columns ang kailangan.
 
-Q: What does the model do?
+### Q: Ano ang model?
 
-A: The Eloquent model is the PHP representation of a table. It defines fillable fields, casts, and relationships such as Product to CakePreview and Order to OrderItem.
+A: PHP representation ng table. Ito ang ginagamit para makipag-usap sa database.
 
-Q: Why use `base_price_cents` instead of a float?
+### Q: Ano ang controller?
 
-A: Integer cents avoid floating-point rounding problems. The views format the integer as Philippine peso currency only when displaying it.
+A: Dito nilalagay ang request logic, validation, saving, updating, at deleting.
 
-Q: What does `$request->validate()` do?
+### Q: Ano ang `validate()`?
 
-A: It checks submitted input before the controller writes to the database. Invalid input returns to the form with errors; valid input continues to the create or update operation.
+A: Chine-check nito kung tama at complete ang submitted form bago mag-save.
 
-Q: Why is the login database-backed?
+### Q: Bakit cents ang price?
 
-A: `Auth::attempt()` receives the submitted username and password, looks up the user through the configured User provider, and compares the password with the hashed database value.
+A: Integer cents avoids floating-point rounding errors. PHP formatting lang ang ginagawa sa display.
 
-Q: Why regenerate the session after login?
+### Q: Bakit database-backed ang login?
 
-A: Session regeneration reduces session-fixation risk. Logout invalidates the session and creates a new CSRF token.
+A: `Auth::attempt()` hinahanap ang user at chine-check ang hashed password sa database.
 
-Q: Why are Cart and Order History separate in the interface?
+### Q: Bakit nireregenerate ang session pagkatapos mag-login?
 
-A: The existing `orders` table uses a `cart` status for the editable draft and other statuses for placed history. This keeps the rubric's Cart actions clear while avoiding a second schema table or an unnecessary checkout system. Cart items can be deleted; placed order items are preserved as read-only history.
+A: Security measure ito laban sa session fixation.
 
-Q: Why are the order items separate from their parent record?
+### Q: Bakit hiwalay ang Cart at Order History?
 
-A: Each product is an order item inside a cart or placed order. This lets the required delete operation remove one cart product without deleting unrelated sibling products or the parent cart.
+A: Ang cart ay editable draft. Ang placed order ay record na dapat manatiling read-only.
 
-Q: Why check that an order item belongs to the order?
+### Q: Bakit hiwalay ang `order_items`?
 
-A: The URL contains both IDs. The controller verifies their relationship before deleting, so a user cannot submit one order ID with another order's item ID.
+A: Para isang product lang ang ma-delete nang hindi binubura ang buong cart.
 
-Q: What does `@csrf` do?
+### Q: Bakit chine-check kung kabilang ang item sa order?
 
-A: It adds a token that Laravel checks on state-changing forms so another site cannot silently submit the user's session.
+A: Para hindi ma-delete ang item mula sa ibang order gamit ang maling URL IDs.
 
-Q: Why use Blade instead of React or Vue?
+### Q: Ano ang Blade?
 
-A: The activity is a Laravel MVC exercise. Blade keeps the request, controller, model, and view flow visible and easy to defend. Alpine is limited to small preview interactions instead of replacing the application with a SPA.
+A: Laravel templating system. Pinagsasama nito ang layout at page content para maging HTML.
 
-Q: What is Tailwind doing here?
+### Q: Bakit Alpine at hindi React/Vue?
 
-A: Tailwind supplies the consistent Page 3 visual system: spacing, responsive grids, colors, cards, buttons, focus states, and the large preview surface.
+A: Small browser interactions lang ang kailangan. Mas simple at bagay sa Laravel MVC activity ang Alpine.
 
-Q: What happens when a generated preview image is absent?
+### Q: Trusted ba ang browser price?
 
-A: The database row still maps the planned combination filename, but `hasAvailableImage()` checks the local public path. When it is absent, the controller sends a null exact-image URL and Alpine displays the product's local base image instead.
+A: Hindi. Preview estimate lang ito. Ang tunay na order price dapat i-recalculate sa Laravel server.
 
-Q: Did the browser price become trusted database data?
+### Q: Ano ang mangyayari kapag walang preview image?
 
-A: No. The current preview estimate is for presentation only. Any future order-creation action must recalculate prices on the Laravel server from trusted product and option values rather than trusting a hidden browser total.
+A: Gagamit muna ng cake base image bilang fallback para hindi blank ang preview.
 
-## 9. Asset handoff
+---
 
-The art pipeline remains separate from the application implementation. When a generated file is ready, place it at the stable path named in `art-reference-pipeline/prompts/filename-map.csv`.
+## 9. Image asset notes
 
-The expected filename pattern is:
+Expected path:
 
 ```text
 public/images/cakes/<base-slug>-<combination-key>.png
@@ -392,17 +384,18 @@ public/images/cakes/classic-ube-bento.png
 public/images/cakes/chocolate-fudge-fruit.png
 ```
 
-After adding files:
+Kapag may bagong image:
 
-1. Keep the filename and combination key unchanged.
-2. Do not copy the Cake2Go reference photographs into final application assets.
-3. Reload `/p3`; no controller or migration change is required.
-4. Confirm that `Generated combination image pending` disappears for the new file's selected state.
-5. Keep the local fallback for every state whose file is not ready.
+1. Panatilihin ang exact filename.
+2. Huwag ilagay ang reference photos sa final app assets.
+3. Reload ang `/p3`.
+4. Kapag wala pa ang file, automatic na gagamit ng base image.
+
+---
 
 ## 10. Verification commands
 
-From the project root:
+Run from the project root:
 
 ```text
 php artisan view:clear
@@ -413,17 +406,7 @@ vendor/bin/pint --dirty --format agent
 npm run build
 ```
 
-The current verified result is:
-
-```text
-22 tests passed after the cart/order distinction, shell bug fixes, image-upload extension, and sparse asset seeder
-140 assertions passed after the cart/order distinction, shell bug fixes, image-upload extension, and sparse asset seeder
-npm run build passed
-composer.json is valid
-4 products, 13 reviewed previews, 3 customers, 2 order records, 3 order items in the presentation database
-```
-
-To start the local server:
+Start the app:
 
 ```text
 php artisan serve --host=127.0.0.1 --port=8001
@@ -435,15 +418,21 @@ Open:
 http://127.0.0.1:8001/login
 ```
 
-Stop it with Ctrl+C. If the PHP child process remains on Windows, identify and stop the process by port from Git Bash:
+Stop with `Ctrl+C`.
+
+Kung naiwan ang PHP process sa Windows:
 
 ```text
 netstat -ano | grep ':8001'
 taskkill /T /F /PID <PID>
 ```
 
-## 11. Scope notes for the defense
+---
 
-The completed path is deliberately intermediate-level and rubric-first. It does not add payment processing, email, queues, external APIs, a customer storefront, a second frontend framework, or an option-pivot schema.
+## 11. Scope ng project
 
-The main generated art is not a blocker. The database preview contract, image filenames, fallback behavior, and UI are already prepared. The remaining asset work can be done independently without changing the Laravel routes or data model.
+Intermediate-level at rubric-first ang implementation.
+
+Hindi kasama ang payment processing, email, queues, external APIs, customer storefront, o checkout system.
+
+Ang main goal ay maipakita nang malinaw ang Laravel MVC, login, CRUD, database relationships, cart deletion, at Blade frontend.

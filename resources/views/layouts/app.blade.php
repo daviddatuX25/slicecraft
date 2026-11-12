@@ -53,7 +53,8 @@
                 <li><a href="{{ url('/p1') }}">Movies</a></li>
                 <li><a href="{{ url('/p2') }}">Books</a></li>
                 <li><a href="{{ route('cake.dashboard') }}">SliceCraft</a></li>
-                <li><a href="{{ url('/p4') }}">Page 4</a></li>
+                <li><a href="{{ route('finals.storefront') }}"><span class="nav-label">Customer Store (Finals)</span></a></li>
+                <li><a href="{{ url('/story') }}">Story </a></li>
             </ul>
 
         </div>
@@ -221,3 +222,5 @@
 </body>
 
 </html>
+
+@yield('my-js')
